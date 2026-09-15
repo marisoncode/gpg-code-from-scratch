@@ -49,7 +49,11 @@ def verify_resource_permission(
             resource=resource_type,
         )
 
-    if res in {"batch", "batches", "production", "inventory", "mfr", "material"}:
+    if res in {
+        "batch", "batches", "production", "inventory", "mfr",
+        "material", "material_lot", "component", "component_lot",
+        "product", "finished_drug",
+    }:
         if lens not in {"production", "all"}:
             raise PermissionDeniedError(
                 f"Your role cannot access {resource_type} records without Production assignment.",
@@ -61,7 +65,11 @@ def verify_resource_permission(
                 resource=resource_type,
             )
 
-    elif res in {"training", "operator_training", "compliance", "deviation", "ooc", "environmental_monitoring"}:
+    elif res in {
+        "training", "operator", "operator_training", "compliance",
+        "deviation", "ooc", "environmental_monitoring", "em", "pm", "oos", "oot",
+        "location",
+    }:
         if lens not in {"compliance", "all"}:
             raise PermissionDeniedError(
                 f"Your role cannot access {resource_type} records without Compliance assignment.",

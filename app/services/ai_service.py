@@ -54,15 +54,65 @@ class GenerationResult:
         retrieved_record_ids: list[str] | None = None,
         permission_denied: bool = False,
         denial_reason: str | None = None,
+        entity_type: str = "",
+        traceability_chain: str = "",
     ) -> None:
         self.text = text
         self.functions_called = functions_called or []
         self.retrieved_record_ids = retrieved_record_ids or []
         self.permission_denied = permission_denied
         self.denial_reason = denial_reason
+        self.entity_type = entity_type
+        self.traceability_chain = traceability_chain
 
     def __str__(self) -> str:
         return self.text
+
+
+def _extract_result_metadata(
+    fn_name: str,
+    args: dict[str, Any],
+    tool_result: dict[str, Any],
+) -> tuple[str, str, list[str]]:
+    """Extract entity_type, traceability_chain, and record IDs from function execution."""
+    result = tool_result.get("result") or {}
+    chain = ""
+    entity_type = ""
+    if isinstance(result, dict):
+        chain = result.get("traceability_chain") or ""
+        entity_type = result.get("entity_type") or ""
+
+    if not entity_type:
+        if "material" in fn_name or ("lot_id" in args and ("rm-" in str(args).lower() or "chem" in str(args).lower())):
+            entity_type = "material_lot"
+        elif "component" in fn_name or ("lot_id" in args and "comp" in str(args).lower()):
+            entity_type = "component"
+        elif "operator" in fn_name:
+            entity_type = "operator"
+        elif "equipment" in fn_name:
+            entity_type = "equipment"
+        elif "finished_drug" in fn_name or "drug" in fn_name:
+            entity_type = "finished_drug"
+        elif "deviation" in fn_name:
+            entity_type = "deviation"
+        elif "batch" in fn_name:
+            entity_type = "batch"
+        elif "entity_type" in args:
+            entity_type = str(args["entity_type"])
+
+    record_ids: list[str] = []
+    for key in ("batch_id", "operator_id", "equipment_id", "lot_number", "deviation_id", "lot_id", "drug_id_or_lot", "entity_id"):
+        if key in args and args[key]:
+            val = str(args[key])
+            if val not in record_ids:
+                record_ids.append(val)
+    if isinstance(result, dict):
+        for key in ("record_id", "lot_id", "finished_drug_id", "deviation_id", "operator_id", "equipment_id"):
+            val = result.get(key)
+            if val and str(val) not in record_ids:
+                record_ids.append(str(val))
+
+    return entity_type, chain, record_ids
 
 
 def _extract_heuristic_tool_call(message: str) -> tuple[str, dict[str, Any]] | None:
@@ -72,6 +122,45 @@ def _extract_heuristic_tool_call(message: str) -> tuple[str, dict[str, Any]] | N
     # Raw query rejection
     if re.search(r"\b(select\s+.*from|drop\s+table|delete\s+from|insert\s+into|update\s+.*set)\b", text, re.I):
         return None
+
+    # Finished drug reverse genealogy: e.g. "finished drug FD-901", "trace finished drug DRUG-10"
+    drug_m = re.search(r"\b(?:finished\s+drug|drug\s+lot|drug)\s+([A-Za-z0-9-_]+)", text, re.I)
+    if drug_m and ("genealogy" in text.lower() or "trace" in text.lower() or "finished" in text.lower() or "fd-" in text.lower()):
+        return "get_finished_drug_genealogy", {"drug_id_or_lot": drug_m.group(1)}
+
+    # Material lot genealogy (forward traceability): e.g. "material lot RM-88321 genealogy", "trace material lot RM-88321"
+    mat_gen_m = re.search(r"\b(?:material\s+lot|material|chemical\s+lot|chemical)\s+([A-Za-z0-9-_]+)", text, re.I)
+    if mat_gen_m and ("genealogy" in text.lower() or "forward" in text.lower() or "trace" in text.lower()):
+        return "get_material_lot_genealogy", {"lot_id": mat_gen_m.group(1)}
+
+    # Component lot genealogy: e.g. "component lot COMP-501 genealogy", "trace component COMP-501"
+    comp_gen_m = re.search(r"\b(?:component\s+lot|component|packaging)\s+([A-Za-z0-9-_]+)", text, re.I)
+    if comp_gen_m and ("genealogy" in text.lower() or "trace" in text.lower()):
+        return "get_component_lot_genealogy", {"lot_id": comp_gen_m.group(1)}
+
+    # Operator batch history: e.g. "operator OP-017 batch history", "batches for operator OP-017"
+    op_hist_m = re.search(r"\boperator\s+([A-Za-z0-9-_]+)", text, re.I)
+    if op_hist_m and ("batch" in text.lower() or "history" in text.lower() or "participat" in text.lower()):
+        return "get_operator_batch_history", {"operator_id": op_hist_m.group(1)}
+
+    # Equipment batch history: e.g. "equipment EQ-102 batch history", "batches on equipment EQ-102"
+    eq_hist_m = re.search(r"\b(?:equipment|eq)\s+([A-Za-z0-9-_]+)", text, re.I)
+    if eq_hist_m and ("batch" in text.lower() or "history" in text.lower() or "processed" in text.lower()):
+        return "get_equipment_batch_history", {"equipment_id": eq_hist_m.group(1)}
+
+    # Deviation impact: e.g. "impact of deviation DEV-445", "deviation DEV-445 impact"
+    dev_impact_m = re.search(r"\bdeviation\s+([A-Za-z0-9-_]+)", text, re.I)
+    if dev_impact_m and ("impact" in text.lower() or "affected" in text.lower()):
+        return "get_deviation_impact", {"deviation_id": dev_impact_m.group(1)}
+
+    # Multi-entity investigate location/product: e.g. "investigate location CLEANROOM-1", "batches for location ROOM-101"
+    loc_m = re.search(r"\b(?:location|room)\s+([A-Za-z0-9-_]+)", text, re.I)
+    if loc_m:
+        return "investigate_entity", {"entity_type": "location", "entity_id": loc_m.group(1)}
+
+    prod_m = re.search(r"\bproduct\s+([A-Za-z0-9-_]+)", text, re.I)
+    if prod_m and ("batch" in text.lower() or "investigat" in text.lower()):
+        return "investigate_entity", {"entity_type": "product", "entity_id": prod_m.group(1)}
 
     # Batch lookup: e.g. "Investigate Batch B-1021", "batch B-1021"
     batch_m = re.search(r"\bbatch\s+([A-Za-z0-9-_]+)", text, re.I)
@@ -102,7 +191,7 @@ def _extract_heuristic_tool_call(message: str) -> tuple[str, dict[str, Any]] | N
 
 
 def _format_offline_tool_summary(fn_name: str, tool_res: dict[str, Any]) -> str:
-    """Format offline tool execution result adhering to SRS Section 10 evidence standards."""
+    """Format offline tool execution result adhering to SRS Section 10 & 19 evidence standards."""
     status = tool_res.get("status")
     result = tool_res.get("result") or {}
 
@@ -137,6 +226,126 @@ def _format_offline_tool_summary(fn_name: str, tool_res: dict[str, Any]) -> str:
     if fn_name == "get_deviation_by_id":
         dev_id = tool_res.get("arguments", {}).get("deviation_id")
         return f"[FACT] Deviation {dev_id} [Source: Deviation Record {dev_id}]: Details retrieved."
+
+    if fn_name == "get_material_lot_genealogy":
+        lot = tool_res.get("arguments", {}).get("lot_id")
+        batches = result.get("batches") or []
+        drugs = result.get("finished_drugs") or []
+        confirmed = result.get("confirmed_impact") or []
+        potential = result.get("potential_impact") or []
+        chain = result.get("traceability_chain") or "material_lot -> batches -> finished_drugs"
+        lines = [
+            f"[FACT] Material Lot Genealogy for {lot} [Source: Material Lot {lot}]:",
+            f"Traceability Chain: {chain}",
+            f"Batches linked: {', '.join(batches) if batches else 'None'}",
+            f"Finished Drugs: {', '.join(drugs) if drugs else 'None'}",
+        ]
+        if confirmed:
+            lines.append("Confirmed Impact:")
+            for item in confirmed:
+                lines.append(f"  - [CONFIRMED IMPACT] Batch {item.get('batch_id')} [Source: Batch {item.get('batch_id')}]: {item.get('reason')}")
+        if potential:
+            lines.append("Potential Impact:")
+            for item in potential:
+                lines.append(f"  - [POTENTIAL IMPACT] Batch {item.get('batch_id')} [Source: Batch {item.get('batch_id')}]: {item.get('reason')}")
+        return "\n".join(lines)
+
+    if fn_name == "get_component_lot_genealogy":
+        lot = tool_res.get("arguments", {}).get("lot_id")
+        batches = result.get("batches") or []
+        confirmed = result.get("confirmed_impact") or []
+        potential = result.get("potential_impact") or []
+        chain = result.get("traceability_chain") or "component_lot -> batches -> finished_drugs"
+        lines = [
+            f"[FACT] Component Lot Genealogy for {lot} [Source: Component Lot {lot}]:",
+            f"Traceability Chain: {chain}",
+            f"Batches linked: {', '.join(batches) if batches else 'None'}",
+        ]
+        if confirmed:
+            lines.append("Confirmed Impact:")
+            for item in confirmed:
+                lines.append(f"  - [CONFIRMED IMPACT] Batch {item.get('batch_id')} [Source: Batch {item.get('batch_id')}]: {item.get('reason')}")
+        if potential:
+            lines.append("Potential Impact:")
+            for item in potential:
+                lines.append(f"  - [POTENTIAL IMPACT] Batch {item.get('batch_id')} [Source: Batch {item.get('batch_id')}]: {item.get('reason')}")
+        return "\n".join(lines)
+
+    if fn_name == "get_operator_batch_history":
+        op_id = tool_res.get("arguments", {}).get("operator_id")
+        batches = result.get("batches") or []
+        eq_handled = result.get("equipment_handled") or []
+        chain = result.get("traceability_chain") or "operator -> batches -> equipment -> quality_events"
+        return (
+            f"[FACT] Operator Batch History for {op_id} [Source: Operator {op_id}]:\n"
+            f"Traceability Chain: {chain}\n"
+            f"Batches executed: {', '.join(batches) if batches else 'None'}\n"
+            f"Equipment handled: {', '.join(eq_handled) if eq_handled else 'None'}"
+        )
+
+    if fn_name == "get_equipment_batch_history":
+        eq_id = tool_res.get("arguments", {}).get("equipment_id")
+        batches = result.get("batches") or []
+        confirmed = result.get("confirmed_impact") or []
+        potential = result.get("potential_impact") or []
+        chain = result.get("traceability_chain") or "equipment -> batches -> deviations"
+        lines = [
+            f"[FACT] Equipment Batch History for {eq_id} [Source: Equipment Asset {eq_id}]:",
+            f"Traceability Chain: {chain}",
+            f"Batches processed: {', '.join(batches) if batches else 'None'}",
+        ]
+        if confirmed:
+            lines.append("Confirmed Impact:")
+            for item in confirmed:
+                lines.append(f"  - [CONFIRMED IMPACT] Batch {item.get('batch_id')} [Source: Batch {item.get('batch_id')}]: {item.get('reason')}")
+        if potential:
+            lines.append("Potential Impact:")
+            for item in potential:
+                lines.append(f"  - [POTENTIAL IMPACT] Batch {item.get('batch_id')} [Source: Batch {item.get('batch_id')}]: {item.get('reason')}")
+        return "\n".join(lines)
+
+    if fn_name == "get_finished_drug_genealogy":
+        drug_id = tool_res.get("arguments", {}).get("drug_id_or_lot")
+        batches = result.get("batches") or []
+        mats = result.get("input_material_lots") or []
+        comps = result.get("input_component_lots") or []
+        chain = result.get("traceability_chain") or "finished_drug -> batch -> input_lots"
+        return (
+            f"[FACT] Finished Drug Reverse Genealogy for {drug_id} [Source: Finished Drug {drug_id}]:\n"
+            f"Traceability Chain: {chain}\n"
+            f"Parent batches: {', '.join(batches) if batches else 'None'}\n"
+            f"Input Material Lots: {', '.join(mats) if mats else 'None'}\n"
+            f"Input Component Lots: {', '.join(comps) if comps else 'None'}"
+        )
+
+    if fn_name == "get_deviation_impact":
+        dev_id = tool_res.get("arguments", {}).get("deviation_id")
+        confirmed = result.get("confirmed_impact") or []
+        potential = result.get("potential_impact") or []
+        chain = result.get("traceability_chain") or "deviation -> affected_batches"
+        lines = [
+            f"[FACT] Deviation Impact Analysis for {dev_id} [Source: Deviation {dev_id}]:",
+            f"Traceability Chain: {chain}",
+        ]
+        if confirmed:
+            lines.append("Confirmed Impact:")
+            for item in confirmed:
+                lines.append(f"  - [CONFIRMED IMPACT] Batch {item.get('batch_id')} [Source: Batch {item.get('batch_id')}]: {item.get('reason')}")
+        if potential:
+            lines.append("Potential Impact:")
+            for item in potential:
+                lines.append(f"  - [POTENTIAL IMPACT] Batch {item.get('batch_id')} [Source: Batch {item.get('batch_id')}]: {item.get('reason')}")
+        return "\n".join(lines)
+
+    if fn_name in {"get_related_batches", "investigate_entity"}:
+        etype = tool_res.get("arguments", {}).get("entity_type", "entity")
+        eid = tool_res.get("arguments", {}).get("entity_id", "")
+        chain = result.get("traceability_chain") or f"{etype} -> batches"
+        return (
+            f"[FACT] Multi-Entity Traceability for {etype} {eid} [Source: {etype.capitalize()} {eid}]:\n"
+            f"Traceability Chain: {chain}\n"
+            f"Status: {result.get('status', 'found')}."
+        )
 
     return f"[FACT] Predefined function {fn_name} executed successfully."
 
@@ -198,12 +407,16 @@ async def generate_response(
         denial_reason = tool_result.get("error") if is_denied else None
         text_summary = _format_offline_tool_summary(fn_name, tool_result)
 
+        entity_type, chain, record_ids = _extract_result_metadata(fn_name, args, tool_result)
+
         return GenerationResult(
             text=text_summary,
             functions_called=functions_called,
             retrieved_record_ids=record_ids,
             permission_denied=is_denied,
             denial_reason=denial_reason,
+            entity_type=entity_type,
+            traceability_chain=chain,
         )
 
     if settings.provider == "gemini" and settings.ai_api_key and not settings.ai_api_key.startswith("your-"):
@@ -309,6 +522,9 @@ async def _generate_openai_with_tools(
 
     messages.append(msg.to_dict() if hasattr(msg, "to_dict") else dict(msg))
 
+    entity_type = ""
+    traceability_chain = ""
+
     for tool_call in msg.tool_calls:
         fn_name = tool_call.function.name
         try:
@@ -325,9 +541,14 @@ async def _generate_openai_with_tools(
             is_any_denied = True
             denial_reason = tool_result.get("error")
 
-        for key_arg in ("batch_id", "operator_id", "equipment_id", "lot_number", "deviation_id"):
-            if key_arg in fn_args:
-                record_ids.append(str(fn_args[key_arg]))
+        t_entity, t_chain, t_records = _extract_result_metadata(fn_name, fn_args, tool_result)
+        if t_entity and not entity_type:
+            entity_type = t_entity
+        if t_chain and not traceability_chain:
+            traceability_chain = t_chain
+        for rid in t_records:
+            if rid not in record_ids:
+                record_ids.append(rid)
 
         messages.append(
             {
@@ -356,6 +577,8 @@ async def _generate_openai_with_tools(
         retrieved_record_ids=record_ids,
         permission_denied=is_any_denied,
         denial_reason=denial_reason,
+        entity_type=entity_type,
+        traceability_chain=traceability_chain,
     )
 
 

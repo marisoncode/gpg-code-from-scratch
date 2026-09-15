@@ -300,6 +300,8 @@ async def chat(
     record_ids: list[str] = []
     permission_denied = False
     denial_reason = None
+    entity_type = ""
+    traceability_chain = ""
     role = (
         (request.permissions.Dashboard_assign if request.permissions else None)
         or user.raw_claims.get("role")
@@ -336,6 +338,8 @@ async def chat(
             if getattr(gen_result, "permission_denied", False):
                 permission_denied = True
                 denial_reason = getattr(gen_result, "denial_reason", None)
+            entity_type = getattr(gen_result, "entity_type", "") or ""
+            traceability_chain = getattr(gen_result, "traceability_chain", "") or ""
 
         # Audit log for successful / completed response
         await audit_service.log_audit_entry(
@@ -348,6 +352,8 @@ async def chat(
             final_response=response_text,
             permission_denied=permission_denied,
             denial_reason=denial_reason,
+            entity_type=entity_type,
+            traceability_chain=traceability_chain,
         )
 
     except (AiAuthError, AiConfigError) as exc:
@@ -361,6 +367,8 @@ async def chat(
             final_response=f"Failed: {exc}",
             permission_denied=permission_denied,
             denial_reason=str(exc),
+            entity_type=entity_type,
+            traceability_chain=traceability_chain,
         )
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
@@ -377,6 +385,8 @@ async def chat(
             model_version=settings.ai_model,
             final_response=f"Rate limited: {exc}",
             permission_denied=permission_denied,
+            entity_type=entity_type,
+            traceability_chain=traceability_chain,
         )
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
@@ -392,6 +402,8 @@ async def chat(
             model_version=settings.ai_model,
             final_response=f"Provider error: {exc}",
             permission_denied=permission_denied,
+            entity_type=entity_type,
+            traceability_chain=traceability_chain,
         )
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
@@ -407,6 +419,8 @@ async def chat(
             model_version=settings.ai_model,
             final_response=f"Internal error: {exc}",
             permission_denied=permission_denied,
+            entity_type=entity_type,
+            traceability_chain=traceability_chain,
         )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
