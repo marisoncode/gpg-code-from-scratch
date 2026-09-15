@@ -56,6 +56,7 @@ class GenerationResult:
         denial_reason: str | None = None,
         entity_type: str = "",
         traceability_chain: str = "",
+        risk_config_version: str = "",
     ) -> None:
         self.text = text
         self.functions_called = functions_called or []
@@ -64,6 +65,7 @@ class GenerationResult:
         self.denial_reason = denial_reason
         self.entity_type = entity_type
         self.traceability_chain = traceability_chain
+        self.risk_config_version = risk_config_version
 
     def __str__(self) -> str:
         return self.text
@@ -73,14 +75,16 @@ def _extract_result_metadata(
     fn_name: str,
     args: dict[str, Any],
     tool_result: dict[str, Any],
-) -> tuple[str, str, list[str]]:
-    """Extract entity_type, traceability_chain, and record IDs from function execution."""
+) -> tuple[str, str, list[str], str]:
+    """Extract entity_type, traceability_chain, record IDs, and risk_config_version from function execution."""
     result = tool_result.get("result") or {}
     chain = ""
     entity_type = ""
+    risk_config_ver = ""
     if isinstance(result, dict):
         chain = result.get("traceability_chain") or ""
         entity_type = result.get("entity_type") or ""
+        risk_config_ver = result.get("config_version") or ""
 
     if not entity_type:
         if "material" in fn_name or ("lot_id" in args and ("rm-" in str(args).lower() or "chem" in str(args).lower())):
@@ -95,24 +99,26 @@ def _extract_result_metadata(
             entity_type = "finished_drug"
         elif "deviation" in fn_name:
             entity_type = "deviation"
-        elif "batch" in fn_name:
+        elif "batch" in fn_name or "similar" in fn_name or "risk" in fn_name:
             entity_type = "batch"
+        elif "trend" in fn_name or "product" in fn_name:
+            entity_type = "product"
         elif "entity_type" in args:
             entity_type = str(args["entity_type"])
 
     record_ids: list[str] = []
-    for key in ("batch_id", "operator_id", "equipment_id", "lot_number", "deviation_id", "lot_id", "drug_id_or_lot", "entity_id"):
+    for key in ("batch_id", "operator_id", "equipment_id", "lot_number", "deviation_id", "lot_id", "drug_id_or_lot", "entity_id", "product_id"):
         if key in args and args[key]:
             val = str(args[key])
             if val not in record_ids:
                 record_ids.append(val)
     if isinstance(result, dict):
-        for key in ("record_id", "lot_id", "finished_drug_id", "deviation_id", "operator_id", "equipment_id"):
+        for key in ("record_id", "lot_id", "finished_drug_id", "deviation_id", "operator_id", "equipment_id", "target_batch_id", "batch_id", "product_id"):
             val = result.get(key)
             if val and str(val) not in record_ids:
                 record_ids.append(str(val))
 
-    return entity_type, chain, record_ids
+    return entity_type, chain, record_ids, risk_config_ver
 
 
 def _extract_heuristic_tool_call(message: str) -> tuple[str, dict[str, Any]] | None:
@@ -122,6 +128,31 @@ def _extract_heuristic_tool_call(message: str) -> tuple[str, dict[str, Any]] | N
     # Raw query rejection
     if re.search(r"\b(select\s+.*from|drop\s+table|delete\s+from|insert\s+into|update\s+.*set)\b", text, re.I):
         return None
+
+    # Phase 3: Batch similarity (e.g. "similar batches to B-1021", "batch similarity for B-1021", "find similar batches to B-1021")
+    if "similar" in text.lower() or "similarity" in text.lower():
+        sim_bid_m = re.search(r"\b([A-Z0-9]+-[0-9]+)\b", text, re.I)
+        if sim_bid_m:
+            return "find_similar_batches", {"batch_id": sim_bid_m.group(1), "top_n": 5}
+
+    # Phase 3: Risk score (e.g. "risk score for batch B-1021", "calculate risk for B-1021", "risk score for B-1021")
+    if "risk" in text.lower() and ("score" in text.lower() or "batch" in text.lower() or "calculat" in text.lower() or "level" in text.lower()):
+        risk_bid_m = re.search(r"\b([A-Z0-9]+-[0-9]+)\b", text, re.I)
+        if risk_bid_m:
+            return "calculate_risk_score", {"batch_id": risk_bid_m.group(1)}
+
+    # Phase 3: Trend detection (e.g. "detect trends for product Aspirin", "yield trend for Aspirin", "trends for product PRD-01")
+    if "trend" in text.lower() or "drift" in text.lower() or "spc" in text.lower():
+        prod_m2 = re.search(r"\bproduct\s+([A-Za-z0-9-_]+)", text, re.I)
+        p_name = prod_m2.group(1) if prod_m2 else "Aspirin"
+        metric_val = "yield"
+        if "em" in text.lower() or "environmental" in text.lower():
+            metric_val = "em_events"
+        elif "equipment" in text.lower() or "dev" in text.lower():
+            metric_val = "equipment_deviations"
+        win_m = re.search(r"\b(\d+[dmy])\b", text, re.I)
+        win_val = win_m.group(1) if win_m else "90d"
+        return "detect_trends", {"product_id": p_name, "metric": metric_val, "window": win_val}
 
     # Finished drug reverse genealogy: e.g. "finished drug FD-901", "trace finished drug DRUG-10"
     drug_m = re.search(r"\b(?:finished\s+drug|drug\s+lot|drug)\s+([A-Za-z0-9-_]+)", text, re.I)
@@ -347,6 +378,57 @@ def _format_offline_tool_summary(fn_name: str, tool_res: dict[str, Any]) -> str:
             f"Status: {result.get('status', 'found')}."
         )
 
+    if fn_name == "find_similar_batches":
+        bid = tool_res.get("arguments", {}).get("batch_id")
+        sim_list = result.get("similar_batches") or []
+        lines = [
+            f"[FACT] Batch Similarity Cohort Analysis for {bid} [Source: Batch Record {bid}]:",
+            f"Evaluated cohort of {len(sim_list)} historically comparable batches:",
+        ]
+        for s in sim_list:
+            lines.append(f"  - Batch {s.get('batch_id')} [Source: Batch {s.get('batch_id')}]: {s.get('summary')}")
+            if s.get("top_factors"):
+                lines.append(f"    Top Factors: {', '.join(s.get('top_factors'))}")
+        return "\n".join(lines)
+
+    if fn_name == "calculate_risk_score":
+        bid = tool_res.get("arguments", {}).get("batch_id") or result.get("batch_id")
+        score = result.get("risk_score", 0)
+        level = result.get("risk_level", "UNKNOWN")
+        cfg_ver = result.get("config_version", "v1.0-approved-2026")
+        reasons = result.get("reasons") or []
+        lines = [
+            f"[FACT] Batch Risk Evaluation for {bid} [Source: Batch Record {bid}]:",
+            f"Calculated Risk Score: {score}/100 ({level} Risk Level)",
+            f"Approved Weight Configuration Version: {cfg_ver}",
+            "Risk Factors & Evidence:",
+        ]
+        for r in reasons:
+            lines.append(f"  - {r.get('evidence')} (Weight: {r.get('weight')})")
+        return "\n".join(lines)
+
+    if fn_name == "detect_trends":
+        pid = tool_res.get("arguments", {}).get("product_id")
+        metric = result.get("metric") or tool_res.get("arguments", {}).get("metric", "yield")
+        period = result.get("period") or tool_res.get("arguments", {}).get("window", "90d")
+        sample_size = result.get("sample_size", 0)
+        method = result.get("method_threshold", "3-sigma SPC moving average")
+        uncertainty = result.get("uncertainty_confidence", "Moderate Confidence")
+        evidence = result.get("evidence") or []
+        findings = result.get("statistical_findings") or []
+        lines = [
+            f"[FACT] Statistical Trend Analysis for {pid} [Metric: {metric}, Period: {period}]:",
+            f"Sample Size: N={sample_size} records evaluated",
+            f"Method / Threshold: {method}",
+            f"Statistical Findings: {'; '.join(findings) if findings else 'Within standard baseline limits'}",
+            f"Evidence: {', '.join(evidence[:5])}",
+            f"Uncertainty & Confidence: {uncertainty}",
+            "CORRELATION NOTICE (SRS Section 13): Correlation does not equal confirmed causation. "
+            "Observed trends represent statistical associations and concurrent patterns. "
+            "Root-cause determination requires authorized human QA/engineering review.",
+        ]
+        return "\n".join(lines)
+
     return f"[FACT] Predefined function {fn_name} executed successfully."
 
 
@@ -407,7 +489,7 @@ async def generate_response(
         denial_reason = tool_result.get("error") if is_denied else None
         text_summary = _format_offline_tool_summary(fn_name, tool_result)
 
-        entity_type, chain, record_ids = _extract_result_metadata(fn_name, args, tool_result)
+        entity_type, chain, record_ids, risk_cfg_ver = _extract_result_metadata(fn_name, args, tool_result)
 
         return GenerationResult(
             text=text_summary,
@@ -417,6 +499,7 @@ async def generate_response(
             denial_reason=denial_reason,
             entity_type=entity_type,
             traceability_chain=chain,
+            risk_config_version=risk_cfg_ver,
         )
 
     if settings.provider == "gemini" and settings.ai_api_key and not settings.ai_api_key.startswith("your-"):
@@ -541,11 +624,13 @@ async def _generate_openai_with_tools(
             is_any_denied = True
             denial_reason = tool_result.get("error")
 
-        t_entity, t_chain, t_records = _extract_result_metadata(fn_name, fn_args, tool_result)
+        t_entity, t_chain, t_records, t_config_ver = _extract_result_metadata(fn_name, fn_args, tool_result)
         if t_entity and not entity_type:
             entity_type = t_entity
         if t_chain and not traceability_chain:
             traceability_chain = t_chain
+        if t_config_ver and not risk_config_version:
+            risk_config_version = t_config_ver
         for rid in t_records:
             if rid not in record_ids:
                 record_ids.append(rid)
@@ -579,6 +664,7 @@ async def _generate_openai_with_tools(
         denial_reason=denial_reason,
         entity_type=entity_type,
         traceability_chain=traceability_chain,
+        risk_config_version=risk_config_version,
     )
 
 

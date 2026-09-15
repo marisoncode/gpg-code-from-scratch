@@ -1,0 +1,21 @@
+{
+  "config_version": "v1.0-approved-2026",
+  "approval_date": "2026-01-15",
+  "approved_by": "QA-Validation-Board",
+  "description": "Approved GMP risk scoring weights per SRS Section 19",
+  "weights": {
+    "operator_unqualified_or_expired": 35,
+    "equipment_pm_overdue": 30,
+    "material_lot_defective_or_oos": 40,
+    "environmental_monitoring_excursion": 25,
+    "unresolved_deviation": 30,
+    "first_time_product_line": 15,
+    "large_batch_size_variation": 10
+  },
+  "thresholds": {
+    "low_risk_max": 25,
+    "medium_risk_max": 60,
+    "high_risk_min": 61
+  }
+}
+

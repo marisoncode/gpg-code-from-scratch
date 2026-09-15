@@ -106,12 +106,14 @@ async def log_audit_entry(
     denial_reason: str | None = None,
     entity_type: str = "",
     traceability_chain: str = "",
+    risk_config_version: str = "",
 ) -> dict[str, Any]:
     """
     Log an immutable audit trail entry for a user request.
     Includes user ID, role, timestamp, raw query, functions called + parameters,
     retrieved record IDs, model/version, final response, permission denial status,
-    and Phase 2 multi-entity investigation fields (entity_type, traceability_chain).
+    Phase 2 multi-entity investigation fields (entity_type, traceability_chain),
+    and Phase 3 risk-weight configuration version (for audit reproducibility).
     Never logs raw JWT or secrets.
     """
     now = datetime.now(timezone.utc).isoformat()
@@ -131,6 +133,7 @@ async def log_audit_entry(
         "denial_reason": denial_reason,
         "entity_type": entity_type or "",
         "traceability_chain": traceability_chain or "",
+        "risk_config_version": risk_config_version or "",
     }
 
     # Store in memory for testing/fallback

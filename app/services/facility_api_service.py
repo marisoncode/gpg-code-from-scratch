@@ -1020,6 +1020,36 @@ def investigate_entity(
 
 
 
+def find_similar_batches(
+    batch_id: str,
+    top_n: int = 5,
+    permissions: ChatPermissions | None = None,
+) -> dict[str, Any]:
+    from app.services.analytics_service import find_similar_batches as _fsb
+    return _fsb(batch_id=batch_id, top_n=top_n, permissions=permissions)
+
+
+def calculate_risk_score(
+    batch_id: str = "",
+    proposed_config: dict[str, Any] | None = None,
+    permissions: ChatPermissions | None = None,
+    weight_config: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    from app.services.analytics_service import calculate_risk_score as _crs
+    target = proposed_config if proposed_config else batch_id
+    return _crs(batch_id_or_config=target, permissions=permissions, weight_config=weight_config)
+
+
+def detect_trends(
+    product_id: str,
+    metric: str = "yield",
+    window: str = "90d",
+    permissions: ChatPermissions | None = None,
+) -> dict[str, Any]:
+    from app.services.analytics_service import detect_trends as _dt
+    return _dt(product_id=product_id, metric=metric, window=window, permissions=permissions)
+
+
 # ── TOOL REGISTRY & SAFE LLM FUNCTION DISPATCH ────────────────────────────────
 
 PREDEFINED_FUNCTIONS: dict[str, Callable[..., Any]] = {
@@ -1041,6 +1071,10 @@ PREDEFINED_FUNCTIONS: dict[str, Callable[..., Any]] = {
     "get_finished_drug_genealogy": get_finished_drug_genealogy,
     "get_deviation_impact": get_deviation_impact,
     "investigate_entity": investigate_entity,
+    # Phase 3 functions:
+    "find_similar_batches": find_similar_batches,
+    "calculate_risk_score": calculate_risk_score,
+    "detect_trends": detect_trends,
 }
 
 PREDEFINED_TOOL_SCHEMAS = [
@@ -1256,6 +1290,51 @@ PREDEFINED_TOOL_SCHEMAS = [
                     "deviation_id": {"type": "string", "description": "The deviation ID (e.g. DEV-445)"}
                 },
                 "required": ["deviation_id"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "find_similar_batches",
+            "description": "Find historically similar batches comparing product, formulation, size, materials, operators, equipment, and location, returning similarity percentage and top explaining factors (SRS FR-006).",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "batch_id": {"type": "string", "description": "Target batch identifier to compare against historical batches"},
+                    "top_n": {"type": "integer", "description": "Number of top similar batches to return (default 5)"},
+                },
+                "required": ["batch_id"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "calculate_risk_score",
+            "description": "Calculate a batch risk score (0-100) and risk level using approved, configurable risk weights (SRS Section 19).",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "batch_id": {"type": "string", "description": "Batch ID to evaluate for risk"},
+                    "proposed_config": {"type": "object", "description": "Optional proposed batch run configuration parameters"},
+                },
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "detect_trends",
+            "description": "Detect statistical trends and anomalies (yield drift, recurring EM events, equipment deviations). Enforces non-causal reporting per SRS Section 13.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "product_id": {"type": "string", "description": "The product identifier to analyze"},
+                    "metric": {"type": "string", "description": "Metric to analyze (yield, em_events, equipment_deviations)"},
+                    "window": {"type": "string", "description": "Time window (e.g. '90d', '6m', '1y')"},
+                },
+                "required": ["product_id"],
             },
         },
     },
