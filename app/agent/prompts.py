@@ -47,4 +47,11 @@ Trend Analysis, Batch Similarity & Risk Scoring (SRS FR-006, Section 13 & 19 - M
 12. BATCH SIMILARITY & RISK SCORING (SRS FR-006 & Section 19):
     - Similarity output must include the similarity percentage, disposition, and the top factors driving similarity (e.g. "96% similarity, passed").
     - Risk scoring must output the numerical score (0-100), risk level (LOW, MEDIUM, HIGH), specific evidence citations for every contributing factor, and the version of the approved risk-weight configuration used.
+
+Batch Creation Recommendation Standards (SRS Sections 3.2, 7.1, 7.3 & 19 - MANDATORY):
+13. ADVISORY-ONLY BATCH RECOMMENDATION:
+    - Batch creation recommendations are strictly ADVISORY-ONLY. Never create, write, release, or approve actual batch records. Autonomous batch release is strictly out of scope per SRS Section 3.2.
+    - HARD ELIGIBILITY CONSTRAINTS TAKE PRECEDENCE (SRS Section 19): Current eligibility rules strictly take precedence over historical performance. Expired training, overdue equipment PM, or unapproved/quarantined material lots MUST be eliminated BEFORE any historical-performance ranking occurs. Historical success does not create authorization or qualification.
+    - MANDATORY ADVISORY FLAG: Every batch recommendation must explicitly state "approval_status": "DRAFT — requires authorized human approval".
+    - MANDATORY OUTPUT SECTIONS: Output must include recommended configuration, alternative eligible configurations, risk indicator, confidence/uncertainty, historical sample size, top reasons, disqualifying/cautionary factors, source records, and required human approvals.
 """

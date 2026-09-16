@@ -2,8 +2,8 @@
 
 Verifies:
 1. Production startup fails without required env vars (passes in dev).
-2. A user without permission never triggers a Cosmos read.
-3. Write-scoped credential is never used against business-data containers.
+2. A user without permission never triggers a downstream HTTP call.
+3. Downstream HTTP calls forward Bearer token in headers.
 4. Missing data produces explicit 'unavailable' response, not fabrication.
 5. Every chat request produces an audit log entry with function(s) called.
 6. The LLM cannot bypass predefined functions to run arbitrary queries.
@@ -15,19 +15,17 @@ import os
 from typing import Any
 from unittest.mock import MagicMock, patch
 
+import jwt
 import pytest
-from azure.cosmos import CosmosClient
 from fastapi.testclient import TestClient
 
 from app.agent.prompts import SYSTEM_PROMPT
-from app.core.config import Settings, settings
+from app.core.config import settings
 from app.main import app, get_cors_origins, validate_production_environment
 from app.services import audit_service, facility_api_service
 from app.services.ai_service import GenerationResult, generate_response
 from app.services.audit_service import (
-    AuditSecurityError,
     get_recent_audit_entries,
-    get_write_container,
     log_audit_entry,
 )
 from app.services.capabilities import ChatPermissions, ModulePermission
@@ -37,7 +35,6 @@ from app.services.facility_api_service import (
     get_batch_by_id,
     get_equipment_status,
     get_operator_training_status,
-    get_readonly_cosmos_client,
 )
 from app.services.permissions_service import PermissionDeniedError
 
@@ -48,29 +45,33 @@ from app.services.permissions_service import PermissionDeniedError
 def test_production_startup_fails_without_required_env_vars() -> None:
     """Production mode must refuse to start if any required variable is empty."""
     required_keys = [
-        "JWT_SECRET",
         "PERMISSIONS_API",
-        "COSMOS_DB_READONLY_KEY",
-        "COSMOS_DB_WRITE_KEY",
-        "MONGODB_URI",
+        "FACILITY_API",
+        "PRODUCTION_API",
+        "COMPLIANCE_API",
+        "ORDER_API",
+        "NOTIFICATION_HUB_API",
     ]
 
     base_env = {
         "ENVIRONMENT": "production",
-        "JWT_SECRET": "sec-123",
         "PERMISSIONS_API": "https://perm.api/api",
-        "COSMOS_DB_READONLY_KEY": "ro-key",
-        "COSMOS_DB_WRITE_KEY": "wr-key",
-        "MONGODB_URI": "mongodb://localhost:27017",
+        "FACILITY_API": "https://facility.api/api",
+        "PRODUCTION_API": "https://prod.api/api",
+        "COMPLIANCE_API": "https://comp.api/api",
+        "ORDER_API": "https://order.api/api",
+        "NOTIFICATION_HUB_API": "https://notif.api/api",
     }
 
     # All present -> should pass without error
     with patch.dict(os.environ, base_env, clear=True):
         with patch.object(settings, "environment", "production"), \
-             patch.object(settings, "jwt_secret", "sec-123"), \
              patch.object(settings, "permissions_api", "https://perm.api/api"), \
-             patch.object(settings, "cosmos_db_readonly_key", "ro-key"), \
-             patch.object(settings, "cosmos_db_write_key", "wr-key"):
+             patch.object(settings, "facility_api", "https://facility.api/api"), \
+             patch.object(settings, "production_api", "https://prod.api/api"), \
+             patch.object(settings, "compliance_api", "https://comp.api/api"), \
+             patch.object(settings, "order_api", "https://order.api/api"), \
+             patch.object(settings, "notification_hub_api", "https://notif.api/api"):
             validate_production_environment()
 
     # Each missing variable must raise RuntimeError naming that variable
@@ -96,11 +97,12 @@ def test_development_startup_skips_validation() -> None:
     """Development mode must start cleanly even when required production keys are empty."""
     dev_env = {
         "ENVIRONMENT": "development",
-        "JWT_SECRET": "",
         "PERMISSIONS_API": "",
-        "COSMOS_DB_READONLY_KEY": "",
-        "COSMOS_DB_WRITE_KEY": "",
-        "MONGODB_URI": "",
+        "FACILITY_API": "",
+        "PRODUCTION_API": "",
+        "COMPLIANCE_API": "",
+        "ORDER_API": "",
+        "NOTIFICATION_HUB_API": "",
     }
     with patch.dict(os.environ, dev_env, clear=True):
         with patch.object(settings, "environment", "development"):
@@ -122,61 +124,56 @@ def test_cors_locking_by_environment() -> None:
         assert "http://127.0.0.1:4200" in dev_origins
 
 
-# ── TEST 2: PERMISSION GATE PREVENTS COSMOS READ ──────────────────────────────
+# ── TEST 2: PERMISSION GATE PREVENTS DOWNSTREAM READ ──────────────────────────
 
 
-def test_permission_gate_prevents_cosmos_read() -> None:
-    """A user lacking permission must be rejected BEFORE any Cosmos read is issued."""
-    mock_container = MagicMock()
-    mock_container.query_items.return_value = []
+def test_permission_gate_prevents_downstream_read() -> None:
+    """A user lacking permission must be rejected BEFORE any downstream HTTP call is issued."""
+    mock_client = MagicMock()
+    facility_api_service.set_http_client(mock_client)
 
-    # 1. Sales lens trying to read batch data
-    sales_perms = ChatPermissions(Dashboard_assign="Sales")
-    with patch("app.services.facility_api_service._get_business_container", return_value=mock_container):
+    try:
+        # 1. Sales lens trying to read batch data
+        sales_perms = ChatPermissions(Dashboard_assign="Sales")
         with pytest.raises(PermissionDeniedError):
             get_batch_by_id("B-1021", permissions=sales_perms)
-        # Verify container was NEVER queried
-        mock_container.query_items.assert_not_called()
+        # Verify downstream HTTP client was NEVER called
+        mock_client.get.assert_not_called()
 
-    # 2. Production user without Compliance view trying to read operator training records
-    prod_perms = ChatPermissions(
-        Dashboard_assign="Production",
-        modules=[ModulePermission(Module_name="Batch Record", View=True)],
-    )
-    with patch("app.services.facility_api_service._get_business_container", return_value=mock_container):
+        # 2. Production user without Compliance view trying to read operator training records
+        prod_perms = ChatPermissions(
+            Dashboard_assign="Production",
+            modules=[ModulePermission(Module_name="Batch Record", View=True)],
+        )
         with pytest.raises(PermissionDeniedError):
             get_operator_training_status("OP-017", permissions=prod_perms)
-        # Verify container was NEVER queried
-        mock_container.query_items.assert_not_called()
+        # Verify downstream HTTP client was NEVER called
+        mock_client.get.assert_not_called()
+    finally:
+        facility_api_service.set_http_client(None)
 
 
-# ── TEST 3: WRITE-SCOPED CREDENTIAL ISOLATION ──────────────────────────────────
+# ── TEST 3: BEARER TOKEN FORWARDING & DOWNSTREAM HEADERS ──────────────────────
 
 
-def test_write_credential_never_used_against_business_containers() -> None:
-    """Write client and write credential must NEVER access business data containers."""
-    # Attempting to access business containers with write container getter must raise
-    business_containers = ["batches", "operators", "equipment", "training", "materials", "deviations", "inventory"]
-    for container_name in business_containers:
-        with pytest.raises(AuditSecurityError) as exc_info:
-            get_write_container(container_name)
-        assert "Security violation" in str(exc_info.value)
-        assert container_name in str(exc_info.value)
+def test_downstream_bearer_token_forwarding() -> None:
+    """Downstream calls forward the Authorization Bearer token."""
+    mock_client = MagicMock()
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = {"id": "B-1021", "status": "IN_PROGRESS"}
+    mock_client.get.return_value = mock_response
 
-    # Read-only service attempting to query audit container must also be rejected
-    with pytest.raises(FacilitySecurityError) as exc_info2:
-        facility_api_service._get_business_container("audit_trail")
-    assert "forbidden" in str(exc_info2.value)
-
-
-def test_readonly_service_rejects_write_key() -> None:
-    """If facility service is configured with write key, it must refuse to initialize."""
-    with patch.object(settings, "cosmos_db_readonly_key", "same_key"), \
-         patch.object(settings, "cosmos_db_write_key", "same_key"), \
-         patch.object(settings, "cosmos_db_endpoint", "https://mock.cosmos.azure.com:443/"):
-        facility_api_service.set_cosmos_readonly_client(None)
-        with pytest.raises(FacilitySecurityError):
-            get_readonly_cosmos_client()
+    facility_api_service.set_http_client(mock_client)
+    try:
+        qa_perms = ChatPermissions(Dashboard_assign="All")
+        res = get_batch_by_id("B-1021", permissions=qa_perms, token="forwarded-test-token")
+        assert res["status"] == "found"
+        assert mock_client.get.called
+        headers = mock_client.get.call_args.kwargs.get("headers", {})
+        assert headers.get("Authorization") == "Bearer forwarded-test-token"
+    finally:
+        facility_api_service.set_http_client(None)
 
 
 # ── TEST 4: MISSING DATA PRODUCES EXPLICIT 'UNAVAILABLE' (NO FABRICATION) ─────
@@ -185,9 +182,11 @@ def test_readonly_service_rejects_write_key() -> None:
 @pytest.mark.asyncio
 async def test_missing_data_produces_explicit_unavailable_response() -> None:
     """Missing data must be stated explicitly as unavailable, never fabricated."""
-    mock_container = MagicMock()
-    # Cosmos returns empty list for nonexistent batch
-    mock_container.query_items.return_value = []
+    mock_client = MagicMock()
+    mock_response = MagicMock()
+    mock_response.status_code = 404
+    mock_client.get.return_value = mock_response
+    facility_api_service.set_http_client(mock_client)
 
     qa_perms = ChatPermissions(
         Dashboard_assign="All",
@@ -197,7 +196,7 @@ async def test_missing_data_produces_explicit_unavailable_response() -> None:
         ],
     )
 
-    with patch("app.services.facility_api_service._get_business_container", return_value=mock_container):
+    try:
         result = get_batch_by_id("B-99999", permissions=qa_perms)
         assert result["status"] == "unavailable"
         assert "unavailable or not found" in result["error"]
@@ -210,6 +209,8 @@ async def test_missing_data_produces_explicit_unavailable_response() -> None:
         # Verify no fabricated success or status
         assert "released" not in res_text.lower()
         assert "passed" not in res_text.lower()
+    finally:
+        facility_api_service.set_http_client(None)
 
 
 def test_prompt_enforces_no_fabrication_and_citations() -> None:
@@ -256,29 +257,26 @@ async def test_audit_log_entry_created_with_function_calls() -> None:
 
 
 @pytest.mark.asyncio
-async def test_chat_endpoint_produces_audit_log(monkeypatch) -> None:
+async def test_chat_endpoint_produces_audit_log() -> None:
     """Sending a request to the chat endpoint logs to the audit trail."""
-    import jwt
-
-    secret = settings.jwt_secret or "dev-jwt-secret-testing-only-12345"
     token = jwt.encode(
         {"userId": "user-gmp-101", "name": "Jane QA", "role": "QA"},
-        secret,
+        "dummy-secret-key-at-least-32-chars-long!",
         algorithm="HS256",
     )
 
     client = TestClient(app)
-    response = client.post(
-        "/chat",
-        headers={"Authorization": f"Bearer {token}"},
-        json={
-            "message": "Investigate Batch B-1021",
-            "permissions": {
-                "Dashboard_assign": "All",
-                "modules": [{"Module_name": "Batch Record", "View": True}],
+    with patch("app.api.chat.resolve_permissions", return_value=ChatPermissions(
+        Dashboard_assign="All",
+        modules=[ModulePermission(Module_name="Batch Record", View=True)],
+    )):
+        response = client.post(
+            "/chat",
+            headers={"Authorization": f"Bearer {token}"},
+            json={
+                "message": "Investigate Batch B-1021",
             },
-        },
-    )
+        )
 
     assert response.status_code == 200
     entries = get_recent_audit_entries(limit=10)
@@ -314,20 +312,3 @@ async def test_raw_query_in_user_prompt_is_rejected() -> None:
     """A user attempting to pass raw SQL statements in chat is refused immediately."""
     result = await generate_response("SELECT * FROM batches WHERE 1=1")
     assert "strictly prohibited" in str(result).lower() or "cannot construct or execute raw database queries" in str(result).lower()
-
-
-# ── TEST 7: REAL COSMOS READ-ONLY CLIENT CONFIGURATION ─────────────────────────
-
-
-def test_real_readonly_cosmos_client_instantiation() -> None:
-    """CosmosClient instantiates with read-only key and endpoint without error."""
-    from azure.cosmos._global_endpoint_manager import _GlobalEndpointManager
-
-    with patch.object(settings, "cosmos_db_endpoint", "https://test-cpg.documents.azure.com:443/"), \
-         patch.object(settings, "cosmos_db_readonly_key", "dGVzdC1yZWFkb25seS1rZXk="), \
-         patch.object(settings, "cosmos_db_write_key", "dGVzdC13cml0ZS1rZXk="), \
-         patch.object(_GlobalEndpointManager, "_GetDatabaseAccount"):
-        facility_api_service.set_cosmos_readonly_client(None)
-        client = get_readonly_cosmos_client()
-        assert isinstance(client, CosmosClient)
-

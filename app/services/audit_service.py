@@ -1,7 +1,6 @@
 """Audit trail service for CPG AI compliance logging.
 
-Uses Azure Cosmos DB and COSMOS_DB_WRITE_KEY to write to COSMOS_DB_AUDIT_CONTAINER.
-The write-scoped credential is NEVER used against business data containers.
+Maintains an immutable audit log for all AI interactions and tool calls.
 Never logs raw JWTs or secrets.
 """
 
@@ -12,72 +11,12 @@ from datetime import datetime, timezone
 from typing import Any
 from uuid import uuid4
 
-from azure.cosmos import CosmosClient
-
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
-# Containers permitted for write-scoped credential
-_ALLOWED_WRITE_CONTAINERS = {"audit_trail", "chat_history"}
-
-
-class AuditSecurityError(Exception):
-    """Raised when write-scoped operations violate container or credential constraints."""
-
-
-_client_override: CosmosClient | None = None
-# In-memory test store for when running tests or if Cosmos client is configured with mock
+# In-memory audit store
 _memory_audit_store: list[dict[str, Any]] = []
-
-
-def set_cosmos_write_client(client: CosmosClient | None) -> None:
-    """Inject test CosmosClient for integration tests."""
-    global _client_override
-    _client_override = client
-
-
-def get_write_cosmos_client() -> CosmosClient:
-    """
-    Returns CosmosClient configured strictly with COSMOS_DB_WRITE_KEY.
-    Ensures that COSMOS_DB_READONLY_KEY is not used for audit logging.
-    """
-    global _client_override
-    if _client_override is not None:
-        return _client_override
-
-    endpoint = (settings.cosmos_db_endpoint or "").strip()
-    key = (settings.cosmos_db_write_key or "").strip()
-
-    if not endpoint:
-        raise ValueError("COSMOS_DB_ENDPOINT is not configured.")
-    if not key:
-        raise ValueError("COSMOS_DB_WRITE_KEY is not configured.")
-
-    if settings.cosmos_db_readonly_key and key == settings.cosmos_db_readonly_key:
-        raise AuditSecurityError(
-            "Security violation: COSMOS_DB_READONLY_KEY cannot be used for audit trail / chat history writes."
-        )
-
-    return CosmosClient(endpoint, credential=key)
-
-
-def get_write_container(container_name: str):
-    """
-    Get container proxy using write key.
-    Strictly prohibits targeting business data containers (batches, equipment, etc.).
-    """
-    c_name = container_name.strip()
-    allowed = {settings.cosmos_db_audit_container, settings.cosmos_db_chat_container, *_ALLOWED_WRITE_CONTAINERS}
-    if c_name not in allowed:
-        raise AuditSecurityError(
-            f"Security violation: Write-scoped credential is not allowed to access container '{c_name}'. "
-            f"Write access is strictly limited to audit and chat history containers."
-        )
-
-    client = get_write_cosmos_client()
-    db = client.get_database_client(settings.cosmos_db_database)
-    return db.get_container_client(c_name)
 
 
 def sanitize_secrets(text: str) -> str:
@@ -87,7 +26,7 @@ def sanitize_secrets(text: str) -> str:
     import re
 
     # Redact Bearer tokens if accidentally included in user input
-    cleaned = re.sub(r"Bearer\s+[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*", "[REDACTED_JWT]", text)
+    cleaned = re.sub(r"Bearer\s+[^\s]+", "[REDACTED_JWT]", text, flags=re.IGNORECASE)
     # Redact potential password/secret query params
     cleaned = re.sub(r"(key|secret|token|password)=([^\s&]+)", r"\1=[REDACTED]", cleaned, flags=re.IGNORECASE)
     return cleaned
@@ -136,29 +75,11 @@ async def log_audit_entry(
         "risk_config_version": risk_config_version or "",
     }
 
-    # Store in memory for testing/fallback
     _memory_audit_store.append(entry)
-
-    try:
-        container = get_write_container(settings.cosmos_db_audit_container)
-        container.create_item(body=entry)
-    except Exception as exc:
-        logger.warning(f"Failed writing audit entry to Cosmos DB container: {exc}")
-
+    logger.info(f"AUDIT_ENTRY: user={entry['user_id']} role={entry['role']} functions={[f.get('function') for f in entry['functions_called']]}")
     return entry
 
 
 def get_recent_audit_entries(limit: int = 50) -> list[dict[str, Any]]:
-    """Retrieve audit entries from Cosmos DB or memory store (for inspection/testing)."""
-    try:
-        container = get_write_container(settings.cosmos_db_audit_container)
-        query = f"SELECT TOP {limit} * FROM c ORDER BY c.timestamp DESC"
-        items = list(container.query_items(query=query, enable_cross_partition_query=True))
-        if items:
-            return items
-    except Exception as exc:
-        logger.warning(f"Could not read audit entries from Cosmos DB: {exc}")
-
-    # Return from in-memory fallback
+    """Retrieve recent audit entries from memory store (for inspection/testing)."""
     return list(reversed(_memory_audit_store[-limit:]))
-

@@ -376,10 +376,9 @@ async def test_chat_endpoint_similarity_and_risk_audit(qa_all_permissions: ChatP
     """POST /chat with risk scoring query must populate risk_config_version in audit trail."""
     import jwt
 
-    secret = settings.jwt_secret or "dev-jwt-secret-testing-only-12345"
     token = jwt.encode(
-        {"userId": "user-qa-phase3", "name": "Phase3 QA", "role": "QA"},
-        secret,
+        {"userId": "user-qa-phase3", "name": "Phase3 QA"},
+        "dummy-secret-key-at-least-32-chars-long!",
         algorithm="HS256",
     )
 
@@ -390,10 +389,10 @@ async def test_chat_endpoint_similarity_and_risk_audit(qa_all_permissions: ChatP
         {"id": "B-999", "batch_number": "B-999", "product": "VaccineY", "equipment": [], "operators": [], "materials": []}
     ]
 
-    with patch("app.services.facility_api_service._get_business_container", return_value=mock_batch_container):
+    with patch("app.services.facility_api_service._get_business_container", return_value=mock_batch_container), \
+         patch("app.api.chat.resolve_permissions", return_value=qa_all_permissions):
         payload = {
             "message": "Calculate risk score for batch B-999",
-            "permissions": qa_all_permissions.model_dump(),
         }
         resp = client.post(
             "/chat",

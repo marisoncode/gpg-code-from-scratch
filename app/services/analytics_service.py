@@ -206,19 +206,20 @@ def find_similar_batches(
 
     target_batch = target_res.get("batch", {})
 
-    # Fetch candidate batches from read-only Cosmos container
+    # Fetch candidate batches from downstream service collection
     try:
-        container = facility_api_service._get_business_container("batches")
-        # Fetch batches of same product or recent batches
+        all_batches = facility_api_service._get_business_items("batches")
         prod = target_batch.get("product")
-        if prod:
-            query = "SELECT TOP 30 * FROM c WHERE c.id != @id AND c.batch_number != @id AND c.product = @prod ORDER BY c.created_at DESC"
-            params = [{"name": "@id", "value": clean_id}, {"name": "@prod", "value": prod}]
-        else:
-            query = "SELECT TOP 30 * FROM c WHERE c.id != @id AND c.batch_number != @id ORDER BY c.created_at DESC"
-            params = [{"name": "@id", "value": clean_id}]
-
-        candidates = list(container.query_items(query=query, parameters=params, enable_cross_partition_query=True))
+        candidates = [
+            b for b in all_batches
+            if str(b.get("id") or b.get("batch_number")) != clean_id
+            and (not prod or b.get("product") == prod)
+        ][:30]
+        if not candidates and prod:
+            candidates = [
+                b for b in all_batches
+                if str(b.get("id") or b.get("batch_number")) != clean_id
+            ][:30]
     except Exception as exc:
         logger.warning(f"Error reading batches for similarity: {exc}")
         candidates = []
@@ -455,11 +456,13 @@ def detect_trends(
     if not clean_prod:
         return {"error": "product_id parameter is required.", "status": "missing_parameter"}
 
-    # Fetch batch population for product from read-only Cosmos container
+    # Fetch batch population for product from downstream service collection
     try:
-        container = facility_api_service._get_business_container("batches")
-        query = "SELECT TOP 50 * FROM c WHERE c.product = @prod OR c.product_id = @prod ORDER BY c.created_at DESC"
-        batches = list(container.query_items(query=query, parameters=[{"name": "@prod", "value": clean_prod}], enable_cross_partition_query=True))
+        all_batches = facility_api_service._get_business_items("batches")
+        batches = [
+            b for b in all_batches
+            if b.get("product") == clean_prod or b.get("product_id") == clean_prod
+        ][:50]
     except Exception as exc:
         logger.warning(f"Error querying batches for trend detection: {exc}")
         batches = []

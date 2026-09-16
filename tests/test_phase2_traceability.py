@@ -458,10 +458,9 @@ async def test_chat_endpoint_populates_phase2_audit_metadata(qa_all_permissions:
     """POST /chat must forward entity_type and traceability_chain to audit_service."""
     import jwt
 
-    secret = settings.jwt_secret or "dev-jwt-secret-testing-only-12345"
     token = jwt.encode(
-        {"userId": "user-qa-trace", "name": "Trace QA", "role": "QA"},
-        secret,
+        {"userId": "user-qa-trace", "name": "Trace QA"},
+        "dummy-secret-key-at-least-32-chars-long!",
         algorithm="HS256",
     )
 
@@ -479,10 +478,10 @@ async def test_chat_endpoint_populates_phase2_audit_metadata(qa_all_permissions:
             return mock_batch_container
         return MagicMock()
 
-    with patch("app.services.facility_api_service._get_business_container", side_effect=container_dispatch):
+    with patch("app.services.facility_api_service._get_business_container", side_effect=container_dispatch), \
+         patch("app.api.chat.resolve_permissions", return_value=qa_all_permissions):
         payload = {
             "message": "Trace material lot RM-88321 genealogy",
-            "permissions": qa_all_permissions.model_dump(),
         }
         resp = client.post(
             "/chat",

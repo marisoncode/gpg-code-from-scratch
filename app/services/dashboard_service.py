@@ -10,11 +10,14 @@ import json
 from datetime import datetime, timezone
 from typing import Any
 
+from fastapi import HTTPException, status
+
 from app.services.capabilities import ChatPermissions, DashboardScope
 from app.services.facility_api_service import (
     get_compliance_dashboard_data,
     get_production_dashboard_data,
 )
+from app.services.permissions_service import PermissionDeniedError
 
 
 def _date_range() -> tuple[str, str]:
@@ -28,10 +31,13 @@ async def fetch_production(
     start_date: str = "",
     end_date: str = "",
     permissions: ChatPermissions | None = None,
+    token: str = "",
 ) -> dict[str, Any]:
     """Fetch production snapshot from facility_api_service."""
     try:
-        return get_production_dashboard_data(user_id=user_id, permissions=permissions)
+        return get_production_dashboard_data(user_id=user_id, permissions=permissions, token=token)
+    except PermissionDeniedError as exc:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=exc.message)
     except Exception as exc:
         return {"scope": "production", "errors": [str(exc)]}
 
@@ -43,10 +49,13 @@ async def fetch_compliance(
     start_date: str = "",
     end_date: str = "",
     permissions: ChatPermissions | None = None,
+    token: str = "",
 ) -> dict[str, Any]:
     """Fetch compliance snapshot from facility_api_service."""
     try:
-        return get_compliance_dashboard_data(user_id=user_id, permissions=permissions)
+        return get_compliance_dashboard_data(user_id=user_id, permissions=permissions, token=token)
+    except PermissionDeniedError as exc:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=exc.message)
     except Exception as exc:
         return {"scope": "compliance", "errors": [str(exc)]}
 
@@ -70,10 +79,10 @@ async def fetch_dashboard_snapshot(
     }
 
     if "production" in scopes:
-        snapshot["production"] = await fetch_production(user_id=user_id, permissions=permissions)
+        snapshot["production"] = await fetch_production(user_id=user_id, permissions=permissions, token=token)
 
     if "compliance" in scopes:
-        snapshot["compliance"] = await fetch_compliance(user_id=user_id, permissions=permissions)
+        snapshot["compliance"] = await fetch_compliance(user_id=user_id, permissions=permissions, token=token)
 
     return snapshot
 

@@ -1,7 +1,6 @@
-"""Azure Cosmos DB repository for chat threads and messages.
+"""Thread and message storage for the chatbot.
 
-Uses COSMOS_DB_WRITE_KEY scoped strictly to COSMOS_DB_CHAT_CONTAINER.
-Maintains thread document structure with embedded request/response turns.
+Maintains thread document structure with embedded request/response turns in-memory.
 """
 
 from __future__ import annotations
@@ -13,21 +12,14 @@ from uuid import uuid4
 
 from fastapi import HTTPException, status
 
-from app.core.config import settings
-from app.services.audit_service import get_write_container
-
 logger = logging.getLogger(__name__)
 
-# In-memory store fallback for offline/test resilience
+# In-memory store for chat threads
 _threads_memory_store: dict[str, dict[str, Any]] = {}
 
 
 def _utcnow() -> str:
     return datetime.now(timezone.utc).isoformat()
-
-
-def _get_chat_container():
-    return get_write_container(settings.cosmos_db_chat_container)
 
 
 def _flatten_messages(doc: dict[str, Any]) -> list[dict[str, Any]]:
@@ -113,38 +105,10 @@ async def create_thread(
     }
 
     _threads_memory_store[thread_id] = doc
-
-    try:
-        container = _get_chat_container()
-        container.create_item(body=doc)
-    except Exception as exc:
-        logger.warning(f"Cosmos DB write for thread {thread_id} failed, using local store: {exc}")
-
     return _serialize_thread(doc, include_messages=True)
 
 
 async def list_threads(*, user_id: str, limit: int = 20) -> list[dict[str, Any]]:
-    # Attempt read from Cosmos DB
-    try:
-        container = _get_chat_container()
-        query = (
-            "SELECT * FROM c WHERE c.user_id = @uid AND ARRAY_LENGTH(c.turns) > 0 "
-            "ORDER BY c.updated_at DESC"
-        )
-        parameters = [{"name": "@uid", "value": user_id}]
-        items = list(
-            container.query_items(
-                query=query,
-                parameters=parameters,
-                enable_cross_partition_query=True,
-            )
-        )
-        if items:
-            return [_serialize_thread(doc) for doc in items[:limit]]
-    except Exception as exc:
-        logger.warning(f"Cosmos DB query for threads failed: {exc}")
-
-    # Fallback to in-memory store
     user_threads = [
         t for t in _threads_memory_store.values()
         if t.get("user_id") == user_id and len(t.get("turns", [])) > 0
@@ -154,19 +118,6 @@ async def list_threads(*, user_id: str, limit: int = 20) -> list[dict[str, Any]]
 
 
 async def get_thread(*, thread_id: str, user_id: str) -> dict[str, Any]:
-    # Check memory first
-    if thread_id in _threads_memory_store and _threads_memory_store[thread_id].get("user_id") == user_id:
-        return _serialize_thread(_threads_memory_store[thread_id], include_messages=True)
-
-    try:
-        container = _get_chat_container()
-        doc = container.read_item(item=thread_id, partition_key=user_id)
-        if doc:
-            _threads_memory_store[thread_id] = doc
-            return _serialize_thread(doc, include_messages=True)
-    except Exception:
-        pass
-
     if thread_id in _threads_memory_store:
         doc = _threads_memory_store[thread_id]
         if doc.get("user_id") == user_id:
@@ -183,20 +134,11 @@ async def get_or_create_active_thread(*, user_id: str, username: str) -> dict[st
 
 
 async def delete_thread(*, thread_id: str, user_id: str) -> None:
-    found = False
     if thread_id in _threads_memory_store and _threads_memory_store[thread_id].get("user_id") == user_id:
         del _threads_memory_store[thread_id]
-        found = True
+        return
 
-    try:
-        container = _get_chat_container()
-        container.delete_item(item=thread_id, partition_key=user_id)
-        found = True
-    except Exception:
-        pass
-
-    if not found:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Thread not found.")
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Thread not found.")
 
 
 async def set_greeting(*, thread_id: str, user_id: str, greeting: str) -> dict[str, Any]:
@@ -205,13 +147,6 @@ async def set_greeting(*, thread_id: str, user_id: str, greeting: str) -> dict[s
     doc["greeting"] = greeting.strip()
     doc["updated_at"] = _utcnow()
     _threads_memory_store[thread_id] = doc
-
-    try:
-        container = _get_chat_container()
-        container.upsert_item(body=doc)
-    except Exception as exc:
-        logger.warning(f"Cosmos DB upsert for greeting failed: {exc}")
-
     return _serialize_thread(doc, include_messages=True)
 
 
@@ -222,8 +157,7 @@ async def append_turn(
     request: str,
     response: str,
 ) -> dict[str, Any]:
-    """Persist one user request + AI response as an embedded turn in Cosmos DB."""
-    # Ensure thread exists
+    """Persist one user request + AI response as an embedded turn."""
     await get_thread(thread_id=thread_id, user_id=user_id)
     doc = _threads_memory_store.get(thread_id)
     if not doc:
@@ -245,13 +179,6 @@ async def append_turn(
         doc["title"] = req[:80]
 
     _threads_memory_store[thread_id] = doc
-
-    try:
-        container = _get_chat_container()
-        container.upsert_item(body=doc)
-    except Exception as exc:
-        logger.warning(f"Cosmos DB upsert turn failed: {exc}")
-
     return _serialize_thread(doc, include_messages=True)
 
 

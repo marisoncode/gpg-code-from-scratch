@@ -7,7 +7,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-DashboardLens = Literal["production", "compliance", "sales", "all"]
+DashboardLens = Literal["production", "compliance", "sales", "none", "all"]
 DashboardScope = Literal["production", "compliance"]
 
 _SUMMARY_RE = re.compile(
@@ -64,7 +64,7 @@ def requested_scopes(message: str) -> set[DashboardScope]:
 
 def normalize_lens(raw: str | None) -> DashboardLens:
     value = (raw or "").strip().lower()
-    if value in {"production", "compliance", "sales", "all"}:
+    if value in {"production", "compliance", "sales", "none", "all"}:
         return value  # type: ignore[return-value]
     return "all"
 
@@ -104,6 +104,10 @@ def refuse_message(requested: set[DashboardScope], allowed: set[DashboardScope],
         return (
             "Your role is assigned to Sales. Production and Compliance dashboard "
             "summaries are not available. Ask an admin to change Dashboard_assign."
+        )
+    if lens == "none":
+        return (
+            "No active dashboard permissions assigned. Access to production and compliance records is denied."
         )
     labels = " and ".join(sorted(denied)).title()
     return (

@@ -24,6 +24,8 @@ from app.services.capabilities import (
     wants_dashboard_data,
 )
 from app.services.dashboard_service import fetch_dashboard_snapshot, format_snapshot_for_prompt
+from app.services.facility_api_service import set_current_token, set_current_user
+from app.services.permissions_service import resolve_permissions
 from app.services.welcome import build_welcome_message
 
 router = APIRouter(
@@ -251,24 +253,29 @@ async def dashboard_summary(
     request: DashboardSummaryRequest,
     user: AuthenticatedUser = Depends(require_facility_user),
 ):
+    set_current_token(user.token)
+    actor_id, actor_name = _facility_identity(
+        user,
+        facility_user_id=request.facility_user_id,
+        facility_user_name=request.facility_user_name,
+    )
+    set_current_user(user_id=actor_id or user.user_id, username=actor_name or user.name)
+    # Resolve authoritative permissions directly from CPG ManageUser API
+    effective_permissions = await resolve_permissions(user.token, user_id=actor_id)
     message = (request.message or "dashboard summary").strip()
     requested = requested_scopes(message)
-    allowed = allowed_scopes(request.permissions)
+    allowed = allowed_scopes(effective_permissions)
     scopes = requested & allowed
-    lens = normalize_lens(request.permissions.Dashboard_assign if request.permissions else None)
+    lens = normalize_lens(effective_permissions.Dashboard_assign)
     refused = refuse_message(requested, allowed, lens)
     snapshot: dict = {}
     if scopes:
-        actor_id, actor_name = _facility_identity(
-            user,
-            facility_user_id=request.facility_user_id,
-            facility_user_name=request.facility_user_name,
-        )
         snapshot = await fetch_dashboard_snapshot(
             token=user.token,
             user_id=actor_id,
             username=actor_name,
             scopes=scopes,
+            permissions=effective_permissions,
         )
     return DashboardSummaryResponse(
         allowed=sorted(scopes),
@@ -282,8 +289,20 @@ async def chat(
     request: ChatRequest,
     user: AuthenticatedUser = Depends(require_facility_user),
 ):
+    set_current_token(user.token)
     display = (request.username or "").strip() or user.name
     user_id = _user_key(user)
+    actor_id, actor_name = _facility_identity(
+        user,
+        facility_user_id=request.facility_user_id,
+        facility_user_name=request.facility_user_name or display,
+    )
+    set_current_user(user_id=actor_id or user.user_id, username=actor_name or display)
+
+    # SECURITY BOUNDARY:
+    # Resolve authoritative permissions from CPG ManageUser / Permissions API using raw forwarded token.
+    # Never trust client-supplied permissions or unverified token claims for authorization.
+    effective_permissions = await resolve_permissions(user.token, user_id=actor_id)
 
     thread_id = (request.thread_id or "").strip() or None
     history: list[dict[str, str]] = []
@@ -303,17 +322,12 @@ async def chat(
     entity_type = ""
     traceability_chain = ""
     risk_config_version = ""
-    role = (
-        (request.permissions.Dashboard_assign if request.permissions else None)
-        or user.raw_claims.get("role")
-        or user.raw_claims.get("Role")
-        or "User"
-    )
+    role = effective_permissions.Dashboard_assign or "User"
 
     try:
         direct, extra_context = await _load_dashboard_context(
             message=request.message,
-            permissions=request.permissions,
+            permissions=effective_permissions,
             user=user,
             facility_user_id=request.facility_user_id,
             facility_user_name=request.facility_user_name or display,
@@ -329,7 +343,8 @@ async def chat(
                 username=display,
                 history=history,
                 extra_context=extra_context or None,
-                permissions=request.permissions,
+                permissions=effective_permissions,
+                token=user.token,
             )
             response_text = str(gen_result)
             if hasattr(gen_result, "functions_called"):
