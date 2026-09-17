@@ -93,7 +93,8 @@ def sales_permissions() -> ChatPermissions:
 # ── TEST 1: FORWARD MATERIAL LOT GENEALOGY & SRS SEC 19 IMPACT LABELS ─────────
 
 
-def test_material_lot_genealogy_distinguishes_confirmed_and_potential_impact(qa_all_permissions: ChatPermissions) -> None:
+@pytest.mark.asyncio
+async def test_material_lot_genealogy_distinguishes_confirmed_and_potential_impact(qa_all_permissions: ChatPermissions) -> None:
     """
     SRS Section 5 & 19:
     material_lot -> batches -> finished_drugs.
@@ -138,7 +139,7 @@ def test_material_lot_genealogy_distinguishes_confirmed_and_potential_impact(qa_
         return MagicMock()
 
     with patch("app.services.facility_api_service._get_business_container", side_effect=container_dispatch):
-        res = get_material_lot_genealogy("RM-88321", permissions=qa_all_permissions)
+        res = await get_material_lot_genealogy("RM-88321", permissions=qa_all_permissions)
 
         assert res["status"] == "found"
         assert res["lot_id"] == "RM-88321"
@@ -159,7 +160,7 @@ def test_material_lot_genealogy_distinguishes_confirmed_and_potential_impact(qa_
         mock_mat_container.query_items.return_value = [
             {"id": "RM-88321", "lot_number": "RM-88321", "quality_status": "RELEASED"}
         ]
-        res2 = get_material_lot_genealogy("RM-88321", permissions=qa_all_permissions)
+        res2 = await get_material_lot_genealogy("RM-88321", permissions=qa_all_permissions)
         conf2 = res2["confirmed_impact"]
         pot2 = res2["potential_impact"]
 
@@ -175,9 +176,10 @@ def test_material_lot_genealogy_distinguishes_confirmed_and_potential_impact(qa_
 
 
 # ── TEST 2: COMPONENT LOT GENEALOGY ───────────────────────────────────────────
-
-
-def test_component_lot_genealogy(qa_all_permissions: ChatPermissions) -> None:
+ 
+ 
+@pytest.mark.asyncio
+async def test_component_lot_genealogy(qa_all_permissions: ChatPermissions) -> None:
     """Trace packaging component genealogy: component_lot -> batches -> finished_drugs."""
     mock_batch_container = MagicMock()
     mock_batch_container.query_items.return_value = [
@@ -191,7 +193,7 @@ def test_component_lot_genealogy(qa_all_permissions: ChatPermissions) -> None:
     ]
 
     with patch("app.services.facility_api_service._get_business_container", return_value=mock_batch_container):
-        res = get_component_lot_genealogy("COMP-501", permissions=qa_all_permissions)
+        res = await get_component_lot_genealogy("COMP-501", permissions=qa_all_permissions)
         assert res["status"] == "found"
         assert res["lot_id"] == "COMP-501"
         assert res["traceability_chain"] == "component_lot -> batches -> finished_drugs"
@@ -204,7 +206,8 @@ def test_component_lot_genealogy(qa_all_permissions: ChatPermissions) -> None:
 # ── TEST 3: REVERSE TRACEABILITY CHAIN (FINISHED DRUG -> INPUT LOTS) ───────────
 
 
-def test_finished_drug_reverse_genealogy(qa_all_permissions: ChatPermissions) -> None:
+@pytest.mark.asyncio
+async def test_finished_drug_reverse_genealogy(qa_all_permissions: ChatPermissions) -> None:
     """Reverse genealogy: finished_drug -> batch -> input_lots (materials + components)."""
     mock_batch_container = MagicMock()
     mock_batch_container.query_items.return_value = [
@@ -218,7 +221,7 @@ def test_finished_drug_reverse_genealogy(qa_all_permissions: ChatPermissions) ->
     ]
 
     with patch("app.services.facility_api_service._get_business_container", return_value=mock_batch_container):
-        res = get_finished_drug_genealogy("DRUG-901", permissions=qa_all_permissions)
+        res = await get_finished_drug_genealogy("DRUG-901", permissions=qa_all_permissions)
         assert res["status"] == "found"
         assert res["finished_drug_id"] == "DRUG-901"
         assert res["traceability_chain"] == "finished_drug -> batch -> input_lots"
@@ -231,7 +234,8 @@ def test_finished_drug_reverse_genealogy(qa_all_permissions: ChatPermissions) ->
 # ── TEST 4: OPERATOR BATCH HISTORY ─────────────────────────────────────────────
 
 
-def test_operator_batch_history(qa_all_permissions: ChatPermissions) -> None:
+@pytest.mark.asyncio
+async def test_operator_batch_history(qa_all_permissions: ChatPermissions) -> None:
     """Retrieve batches executed by operator, equipment handled, and qualifications."""
     mock_tr_container = MagicMock()
     mock_batch_container = MagicMock()
@@ -251,7 +255,7 @@ def test_operator_batch_history(qa_all_permissions: ChatPermissions) -> None:
         return MagicMock()
 
     with patch("app.services.facility_api_service._get_business_container", side_effect=container_dispatch):
-        res = get_operator_batch_history("OP-017", permissions=qa_all_permissions)
+        res = await get_operator_batch_history("OP-017", permissions=qa_all_permissions)
         assert res["status"] == "found"
         assert res["operator_id"] == "OP-017"
         assert res["traceability_chain"] == "operator -> batches -> equipment -> quality_events"
@@ -264,7 +268,8 @@ def test_operator_batch_history(qa_all_permissions: ChatPermissions) -> None:
 # ── TEST 5: EQUIPMENT BATCH HISTORY & OVERDUE PM POTENTIAL IMPACT ─────────────
 
 
-def test_equipment_batch_history_pm_impact(qa_all_permissions: ChatPermissions) -> None:
+@pytest.mark.asyncio
+async def test_equipment_batch_history_pm_impact(qa_all_permissions: ChatPermissions) -> None:
     """Equipment batch history distinguishes confirmed deviations from overdue PM potential impact."""
     mock_eq_container = MagicMock()
     mock_batch_container = MagicMock()
@@ -285,7 +290,7 @@ def test_equipment_batch_history_pm_impact(qa_all_permissions: ChatPermissions) 
         return MagicMock()
 
     with patch("app.services.facility_api_service._get_business_container", side_effect=container_dispatch):
-        res = get_equipment_batch_history("EQ-102", permissions=qa_all_permissions)
+        res = await get_equipment_batch_history("EQ-102", permissions=qa_all_permissions)
         assert res["status"] == "found"
         assert res["traceability_chain"] == "equipment -> batches -> deviations"
         assert len(res["confirmed_impact"]) == 1
@@ -301,7 +306,8 @@ def test_equipment_batch_history_pm_impact(qa_all_permissions: ChatPermissions) 
 # ── TEST 6: DEVIATION FORWARD IMPACT (CONFIRMED VS CO-MANUFACTURED POTENTIAL) ─
 
 
-def test_deviation_impact_shared_equipment(qa_all_permissions: ChatPermissions) -> None:
+@pytest.mark.asyncio
+async def test_deviation_impact_shared_equipment(qa_all_permissions: ChatPermissions) -> None:
     """
     Deviation -> directly affected batch (confirmed) + co-manufactured on shared line (potential).
     """
@@ -326,7 +332,7 @@ def test_deviation_impact_shared_equipment(qa_all_permissions: ChatPermissions) 
         return MagicMock()
 
     with patch("app.services.facility_api_service._get_business_container", side_effect=container_dispatch):
-        res = get_deviation_impact("DEV-445", permissions=qa_all_permissions)
+        res = await get_deviation_impact("DEV-445", permissions=qa_all_permissions)
         assert res["status"] == "found"
         assert res["traceability_chain"] == "deviation -> affected_batches"
         assert len(res["confirmed_impact"]) == 1
@@ -342,42 +348,43 @@ def test_deviation_impact_shared_equipment(qa_all_permissions: ChatPermissions) 
 # ── TEST 7: INVESTIGATE ENTITY FROM ANY STARTING TYPE ─────────────────────────
 
 
-def test_investigate_entity_universal_entry(qa_all_permissions: ChatPermissions) -> None:
+@pytest.mark.asyncio
+async def test_investigate_entity_universal_entry(qa_all_permissions: ChatPermissions) -> None:
     """Verify investigate_entity routes properly for all supported entity types."""
     mock_container = MagicMock()
     mock_container.query_items.return_value = [{"id": "GEN-01", "status": "OK"}]
 
     with patch("app.services.facility_api_service._get_business_container", return_value=mock_container):
         # 1. Start from material lot
-        res_mat = investigate_entity("material_lot", "RM-88321", permissions=qa_all_permissions)
+        res_mat = await investigate_entity("material_lot", "RM-88321", permissions=qa_all_permissions)
         assert res_mat["traceability_chain"] == "material_lot -> batches -> finished_drugs"
 
         # 2. Start from component
-        res_comp = investigate_entity("component", "COMP-501", permissions=qa_all_permissions)
+        res_comp = await investigate_entity("component", "COMP-501", permissions=qa_all_permissions)
         assert res_comp["traceability_chain"] == "component_lot -> batches -> finished_drugs"
 
         # 3. Start from finished drug
-        res_drug = investigate_entity("finished_drug", "FD-901", permissions=qa_all_permissions)
+        res_drug = await investigate_entity("finished_drug", "FD-901", permissions=qa_all_permissions)
         assert res_drug["traceability_chain"] == "finished_drug -> batch -> input_lots"
 
         # 4. Start from operator
-        res_op = investigate_entity("operator", "OP-017", permissions=qa_all_permissions)
+        res_op = await investigate_entity("operator", "OP-017", permissions=qa_all_permissions)
         assert res_op["traceability_chain"] == "operator -> batches -> equipment -> quality_events"
 
         # 5. Start from equipment
-        res_eq = investigate_entity("equipment", "EQ-102", permissions=qa_all_permissions)
+        res_eq = await investigate_entity("equipment", "EQ-102", permissions=qa_all_permissions)
         assert res_eq["traceability_chain"] == "equipment -> batches -> deviations"
 
         # 6. Start from deviation
-        res_dev = investigate_entity("deviation", "DEV-445", permissions=qa_all_permissions)
+        res_dev = await investigate_entity("deviation", "DEV-445", permissions=qa_all_permissions)
         assert res_dev["traceability_chain"] == "deviation -> affected_batches"
 
         # 7. Start from location
-        res_loc = investigate_entity("location", "CLEANROOM-A", permissions=qa_all_permissions)
+        res_loc = await investigate_entity("location", "CLEANROOM-A", permissions=qa_all_permissions)
         assert res_loc["traceability_chain"] == "location -> em -> batches"
 
         # 8. Start from product
-        res_prod = investigate_entity("product", "Aspirin", permissions=qa_all_permissions)
+        res_prod = await investigate_entity("product", "Aspirin", permissions=qa_all_permissions)
         assert res_prod["traceability_chain"] == "product -> batches"
 
 
@@ -502,7 +509,8 @@ async def test_chat_endpoint_populates_phase2_audit_metadata(qa_all_permissions:
 # ── TEST 10: ROLE-BASED PRE-QUERY PERMISSION GATING ON ALL PHASE 2 ENTITIES ───
 
 
-def test_permission_gate_blocks_sales_and_unauthorized_roles(
+@pytest.mark.asyncio
+async def test_permission_gate_blocks_sales_and_unauthorized_roles(
     sales_permissions: ChatPermissions,
     prod_only_permissions: ChatPermissions,
     comp_only_permissions: ChatPermissions,
@@ -513,25 +521,25 @@ def test_permission_gate_blocks_sales_and_unauthorized_roles(
     with patch("app.services.facility_api_service._get_business_container", return_value=mock_container):
         # 1. Sales lens is blocked from everything
         with pytest.raises(PermissionDeniedError):
-            get_material_lot_genealogy("RM-101", permissions=sales_permissions)
+            await get_material_lot_genealogy("RM-101", permissions=sales_permissions)
         with pytest.raises(PermissionDeniedError):
-            get_operator_batch_history("OP-101", permissions=sales_permissions)
+            await get_operator_batch_history("OP-101", permissions=sales_permissions)
         with pytest.raises(PermissionDeniedError):
-            get_deviation_impact("DEV-101", permissions=sales_permissions)
+            await get_deviation_impact("DEV-101", permissions=sales_permissions)
         with pytest.raises(PermissionDeniedError):
-            get_finished_drug_genealogy("FD-101", permissions=sales_permissions)
+            await get_finished_drug_genealogy("FD-101", permissions=sales_permissions)
         mock_container.query_items.assert_not_called()
 
         # 2. Production lens cannot access pure Compliance deviation impact or operator training
         with pytest.raises(PermissionDeniedError):
-            get_deviation_impact("DEV-101", permissions=prod_only_permissions)
+            await get_deviation_impact("DEV-101", permissions=prod_only_permissions)
         with pytest.raises(PermissionDeniedError):
-            get_operator_batch_history("OP-101", permissions=prod_only_permissions)
+            await get_operator_batch_history("OP-101", permissions=prod_only_permissions)
         mock_container.query_items.assert_not_called()
 
         # 3. Compliance lens cannot access pure Production material or finished drug genealogy
         with pytest.raises(PermissionDeniedError):
-            get_material_lot_genealogy("RM-101", permissions=comp_only_permissions)
+            await get_material_lot_genealogy("RM-101", permissions=comp_only_permissions)
         with pytest.raises(PermissionDeniedError):
-            get_finished_drug_genealogy("FD-101", permissions=comp_only_permissions)
+            await get_finished_drug_genealogy("FD-101", permissions=comp_only_permissions)
         mock_container.query_items.assert_not_called()

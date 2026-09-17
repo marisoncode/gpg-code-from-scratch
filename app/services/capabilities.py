@@ -66,13 +66,13 @@ def normalize_lens(raw: str | None) -> DashboardLens:
     value = (raw or "").strip().lower()
     if value in {"production", "compliance", "sales", "none", "all"}:
         return value  # type: ignore[return-value]
-    return "all"
+    return "none"
 
 
 def has_module_view(permissions: ChatPermissions | None, module_name: str) -> bool:
     modules = list(permissions.modules) if permissions else []
     if not modules:
-        return True
+        return False
     needle = module_name.strip().lower()
     match = next((m for m in modules if (m.Module_name or "").strip().lower() == needle), None)
     if match is None:

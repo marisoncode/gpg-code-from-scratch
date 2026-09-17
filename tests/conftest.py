@@ -169,3 +169,151 @@ def mock_openai_client_for_tests():
 
     with patch("app.services.ai_service._build_openai_client", return_value=mock_client):
         yield mock_client
+
+
+@pytest.fixture(autouse=True)
+def cleanup_dependency_overrides():
+    """Ensure FastAPI dependency overrides are cleared after each test to prevent test leakage."""
+    from app.main import app
+    yield
+    app.dependency_overrides.clear()
+
+
+@pytest.fixture(autouse=True)
+def cleanup_user_context():
+    """Ensure user identity and token context variables are cleared after each test."""
+    yield
+    from app.services.facility_api_service import set_current_token, set_current_user
+    set_current_user(user_id="", username="", collection_id="")
+    set_current_token("")
+
+
+import copy
+from uuid import uuid4
+
+
+class AsyncFakeCursor:
+    def __init__(self, docs: list[dict[str, Any]]) -> None:
+        self._docs = [copy.deepcopy(d) for d in docs]
+
+    def sort(self, key_or_list: Any, direction: int = 1) -> AsyncFakeCursor:
+        if isinstance(key_or_list, list) and len(key_or_list) > 0:
+            sort_key, direction = key_or_list[0]
+        else:
+            sort_key = key_or_list
+        reverse = (direction == -1)
+        self._docs.sort(key=lambda d: str(d.get(sort_key, "")), reverse=reverse)
+        return self
+
+    def limit(self, n: int) -> AsyncFakeCursor:
+        self._docs = self._docs[:n]
+        return self
+
+    async def to_list(self, length: int | None = None) -> list[dict[str, Any]]:
+        if length is not None:
+            return [copy.deepcopy(d) for d in self._docs[:length]]
+        return [copy.deepcopy(d) for d in self._docs]
+
+
+class AsyncFakeCollection:
+    def __init__(self, name: str) -> None:
+        self.name = name
+        self._docs: list[dict[str, Any]] = []
+        self._indexes: list[Any] = []
+
+    def _matches(self, doc: dict[str, Any], query: dict[str, Any]) -> bool:
+        for k, v in query.items():
+            if k == "$or":
+                if not any(self._matches(doc, sub) for sub in v):
+                    return False
+            elif k == "turns.0":
+                if isinstance(v, dict) and "$exists" in v:
+                    turns = doc.get("turns") or []
+                    if (len(turns) > 0) != bool(v["$exists"]):
+                        return False
+            else:
+                if doc.get(k) != v:
+                    return False
+        return True
+
+    async def insert_one(self, doc: dict[str, Any]) -> Any:
+        d = copy.deepcopy(doc)
+        if "_id" not in d:
+            d["_id"] = d.get("id") or str(uuid4())
+        self._docs.append(d)
+        res = MagicMock()
+        res.inserted_id = d["_id"]
+        return res
+
+    async def find_one(self, query: dict[str, Any]) -> dict[str, Any] | None:
+        for d in self._docs:
+            if self._matches(d, query):
+                return copy.deepcopy(d)
+        return None
+
+    def find(self, query: dict[str, Any] | None = None) -> AsyncFakeCursor:
+        q = query or {}
+        matching = [d for d in self._docs if self._matches(d, q)]
+        return AsyncFakeCursor(matching)
+
+    async def update_one(self, query: dict[str, Any], update: dict[str, Any]) -> Any:
+        for d in self._docs:
+            if self._matches(d, query):
+                for field, item in update.get("$push", {}).items():
+                    d.setdefault(field, []).append(copy.deepcopy(item))
+                for field, val in update.get("$set", {}).items():
+                    d[field] = copy.deepcopy(val)
+                res = MagicMock()
+                res.modified_count = 1
+                return res
+        res = MagicMock()
+        res.modified_count = 0
+        return res
+
+    async def delete_one(self, query: dict[str, Any]) -> Any:
+        for i, d in enumerate(self._docs):
+            if self._matches(d, query):
+                self._docs.pop(i)
+                res = MagicMock()
+                res.deleted_count = 1
+                return res
+        res = MagicMock()
+        res.deleted_count = 0
+        return res
+
+    async def create_index(self, keys: Any, **kwargs: Any) -> str:
+        self._indexes.append((keys, kwargs))
+        return "idx_" + str(len(self._indexes))
+
+
+class AsyncFakeAdmin:
+    async def command(self, cmd: str, **kwargs: Any) -> dict[str, Any]:
+        if cmd == "ping":
+            return {"ok": 1.0}
+        return {"ok": 1.0}
+
+
+class AsyncFakeMongoDatabase:
+    def __init__(self) -> None:
+        self._collections: dict[str, AsyncFakeCollection] = {}
+        self.admin = AsyncFakeAdmin()
+
+    def __getitem__(self, name: str) -> AsyncFakeCollection:
+        if name not in self._collections:
+            self._collections[name] = AsyncFakeCollection(name)
+        return self._collections[name]
+
+    def clear(self) -> None:
+        self._collections.clear()
+
+
+@pytest.fixture(autouse=True)
+def setup_test_mongo_database():
+    """Ensure tests run with an in-memory async Motor-compatible database."""
+    from app.core.database import set_database
+    fake_db = AsyncFakeMongoDatabase()
+    set_database(fake_db)
+    yield fake_db
+    fake_db.clear()
+    set_database(None)
+

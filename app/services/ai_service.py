@@ -8,6 +8,7 @@ Uses the real API key strictly loaded from the environment (.env).
 
 from __future__ import annotations
 
+import inspect
 import json
 import logging
 import re
@@ -56,6 +57,7 @@ class GenerationResult:
         entity_type: str = "",
         traceability_chain: str = "",
         risk_config_version: str = "",
+        data_source: str = "",
     ) -> None:
         self.text = text
         self.functions_called = functions_called or []
@@ -65,6 +67,7 @@ class GenerationResult:
         self.entity_type = entity_type
         self.traceability_chain = traceability_chain
         self.risk_config_version = risk_config_version
+        self.data_source = data_source
 
     def __str__(self) -> str:
         return self.text
@@ -172,6 +175,22 @@ def _to_openai_messages(
     return messages
 
 
+def _is_conversational_greeting(message: str) -> bool:
+    """Detect if a user input is a pure greeting or capability check rather than a domain query."""
+    cleaned = message.strip().lower().rstrip("!.,? ")
+    greetings = {
+        "hi", "hello", "hey", "hiya", "howdy", "good morning", "good afternoon",
+        "good evening", "greetings", "who are you", "what can you do", "help",
+    }
+    if cleaned in greetings:
+        return True
+    if any(cleaned.startswith(f"{g} ") for g in ("hi", "hello", "hey", "good morning", "good afternoon", "good evening")):
+        domain_keywords = ("batch", "lot", "deviation", "equipment", "material", "kpi", "dashboard", "training", "operator", "oos", "oot", "investigat", "recommend", "trace")
+        if not any(k in cleaned for k in domain_keywords):
+            return True
+    return False
+
+
 async def _generate_openai_with_tools(
     message: str,
     *,
@@ -188,14 +207,18 @@ async def _generate_openai_with_tools(
 
     messages = _to_openai_messages(system=system, history=history, message=message)
 
+    create_kwargs: dict[str, Any] = {
+        "model": model,
+        "messages": messages,
+        "temperature": 0.2,
+        "max_tokens": 1024,
+    }
+    # Pass tools only when query is not a pure greeting / introductory query
+    if not _is_conversational_greeting(message):
+        create_kwargs["tools"] = PREDEFINED_TOOL_SCHEMAS
+
     try:
-        completion = await client.chat.completions.create(
-            model=model,
-            messages=messages,
-            tools=PREDEFINED_TOOL_SCHEMAS,
-            temperature=0.2,
-            max_tokens=1024,
-        )
+        completion = await client.chat.completions.create(**create_kwargs)
     except AuthenticationError as exc:
         raise AiAuthError(f"OpenAI authentication failed: {exc}") from exc
     except RateLimitError as exc:
@@ -222,6 +245,7 @@ async def _generate_openai_with_tools(
     entity_type = ""
     traceability_chain = ""
     risk_config_version = ""
+    data_source = ""
 
     for tool_call in msg.tool_calls:
         fn_name = tool_call.function.name
@@ -233,7 +257,16 @@ async def _generate_openai_with_tools(
         functions_called.append({"name": fn_name, "parameters": fn_args})
 
         # Execute safe predefined function with permissions and token forwarded
-        tool_result = execute_predefined_tool(fn_name, fn_args, permissions=permissions, token=token)
+        res = execute_predefined_tool(fn_name, fn_args, permissions=permissions, token=token)
+        if inspect.isawaitable(res):
+            tool_result = await res
+        else:
+            tool_result = res
+
+        res_data = tool_result.get("result") or {}
+        if isinstance(res_data, dict) and res_data.get("data_source"):
+            data_source = str(res_data.get("data_source"))
+            functions_called[-1]["data_source"] = data_source
 
         if tool_result.get("status") == "permission_denied":
             is_any_denied = True
@@ -286,6 +319,7 @@ async def _generate_openai_with_tools(
         entity_type=entity_type,
         traceability_chain=traceability_chain,
         risk_config_version=risk_config_version,
+        data_source=data_source,
     )
 
 

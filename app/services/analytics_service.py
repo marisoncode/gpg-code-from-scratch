@@ -12,6 +12,7 @@ Provides:
 
 from __future__ import annotations
 
+import inspect
 import json
 import logging
 import math
@@ -179,7 +180,7 @@ def _calculate_batch_pair_similarity(target: dict[str, Any], candidate: dict[str
     return normalized, top_factors
 
 
-def find_similar_batches(
+async def find_similar_batches(
     batch_id: str,
     top_n: int = 5,
     permissions: ChatPermissions | None = None,
@@ -197,6 +198,8 @@ def find_similar_batches(
 
     # Fetch target batch
     target_res = facility_api_service.get_batch_by_id(clean_id, permissions=permissions)
+    if inspect.isawaitable(target_res):
+        target_res = await target_res
     if target_res.get("status") != "found":
         return {
             "error": f"Target batch {clean_id} is unavailable or not found in CPG data.",
@@ -208,7 +211,11 @@ def find_similar_batches(
 
     # Fetch candidate batches from downstream service collection
     try:
-        all_batches = facility_api_service._get_business_items("batches")
+        raw_batches = facility_api_service._get_business_items("batches")
+        if inspect.isawaitable(raw_batches):
+            all_batches = await raw_batches
+        else:
+            all_batches = raw_batches if isinstance(raw_batches, list) else []
         prod = target_batch.get("product")
         candidates = [
             b for b in all_batches
@@ -271,7 +278,7 @@ def find_similar_batches(
 # ── 2. CONFIGURABLE RISK SCORING (SRS SECTION 19) ─────────────────────────────
 
 
-def calculate_risk_score(
+async def calculate_risk_score(
     batch_id_or_config: str | dict[str, Any],
     permissions: ChatPermissions | None = None,
     weight_config: dict[str, Any] | None = None,
@@ -296,6 +303,8 @@ def calculate_risk_score(
     if isinstance(batch_id_or_config, str):
         clean_id = batch_id_or_config.strip()
         batch_res = facility_api_service.get_batch_by_id(clean_id, permissions=permissions)
+        if inspect.isawaitable(batch_res):
+            batch_res = await batch_res
         if batch_res.get("status") != "found":
             return {
                 "error": f"Target batch {clean_id} is unavailable for risk scoring.",
@@ -319,6 +328,8 @@ def calculate_risk_score(
     for m in materials:
         if m:
             m_res = facility_api_service.get_material_lot_trace(str(m), permissions=permissions)
+            if inspect.isawaitable(m_res):
+                m_res = await m_res
             mat_item = m_res.get("material_lot", {})
             m_status = str(mat_item.get("quality_status") or mat_item.get("status") or "").upper()
             if m_status in {"REJECTED", "DEFECTIVE", "OOS", "RECALLED"}:
@@ -339,6 +350,8 @@ def calculate_risk_score(
     for eq_id in equipments:
         if eq_id:
             eq_res = facility_api_service.get_equipment_status(str(eq_id), permissions=permissions)
+            if inspect.isawaitable(eq_res):
+                eq_res = await eq_res
             eq_item = eq_res.get("equipment", {})
             pm_stat = str(eq_item.get("pm_status") or eq_item.get("status") or "").upper()
             if pm_stat in {"OVERDUE", "EXPIRED", "NON_COMPLIANT"}:
@@ -361,6 +374,8 @@ def calculate_risk_score(
     for op_id in operators:
         if op_id:
             op_res = facility_api_service.get_operator_training_status(str(op_id), permissions=permissions)
+            if inspect.isawaitable(op_res):
+                op_res = await op_res
             records = op_res.get("training_records") or []
             # Check for any expired or incomplete status
             for rec in records:
@@ -435,7 +450,7 @@ def calculate_risk_score(
 # ── 3. TREND & ANOMALY DETECTION (SRS SECTION 13) ─────────────────────────────
 
 
-def detect_trends(
+async def detect_trends(
     product_id: str,
     metric: str,
     window: str = "90d",
@@ -458,7 +473,11 @@ def detect_trends(
 
     # Fetch batch population for product from downstream service collection
     try:
-        all_batches = facility_api_service._get_business_items("batches")
+        raw_batches = facility_api_service._get_business_items("batches")
+        if inspect.isawaitable(raw_batches):
+            all_batches = await raw_batches
+        else:
+            all_batches = raw_batches if isinstance(raw_batches, list) else []
         batches = [
             b for b in all_batches
             if b.get("product") == clean_prod or b.get("product_id") == clean_prod

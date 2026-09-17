@@ -130,14 +130,6 @@ def decode_facility_token(token: str) -> AuthenticatedUser:
 async def require_facility_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(_bearer),
 ) -> AuthenticatedUser:
-    import asyncio
-    import app.core.auth as auth_mod
-    if hasattr(auth_mod.require_facility_user, "mock_calls"):
-        res = auth_mod.require_facility_user(credentials)
-        if asyncio.iscoroutine(res):
-            return await res
-        return res
-
     if credentials is None or credentials.scheme.lower() != "bearer" or not credentials.credentials:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

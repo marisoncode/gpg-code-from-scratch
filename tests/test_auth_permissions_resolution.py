@@ -20,7 +20,7 @@ import jwt
 import pytest
 from fastapi.testclient import TestClient
 
-from app.core.auth import decode_facility_token
+from app.core.auth import AuthenticatedUser, decode_facility_token, require_facility_user
 from app.core.config import settings
 from app.main import app
 from app.services.capabilities import ChatPermissions, ModulePermission
@@ -224,3 +224,41 @@ async def test_valid_permissions_api_response_authorizes_user() -> None:
         # But Compliance resource without compliance view is denied
         with pytest.raises(PermissionDeniedError):
             verify_resource_permission(perms, "compliance")
+
+
+# ── TEST 6: AUTHENTICATION ENFORCEMENT & DEPENDENCY OVERRIDE ISOLATION ─────────
+def test_require_facility_user_unauthenticated_returns_401() -> None:
+    """Real require_facility_user rejects requests lacking Authorization headers."""
+    client = TestClient(app)
+    response = client.post("/v1/chat", json={"message": "hello"})
+    assert response.status_code == 401
+    assert "authentication required" in response.text.lower()
+
+
+def test_require_facility_user_overridable_via_dependency_overrides() -> None:
+    """FastAPI standard dependency_overrides replaces require_facility_user cleanly without production mock checks."""
+    fake_user = AuthenticatedUser(
+        user_id="fake-dep-user-99",
+        name="Fake Dep User",
+        raw_claims={"userId": "fake-dep-user-99"},
+        token="fake-override-token",
+    )
+
+    app.dependency_overrides[require_facility_user] = lambda: fake_user
+    client = TestClient(app)
+
+    with patch("app.api.chat.resolve_permissions", return_value=ChatPermissions(Dashboard_assign="All")):
+        response = client.post(
+            "/v1/chat",
+            json={"message": "hello"},
+        )
+    assert response.status_code == 200
+
+
+def test_dependency_override_does_not_leak_to_subsequent_test() -> None:
+    """Fixture cleanup ensures dependency overrides from previous tests are cleared."""
+    client = TestClient(app)
+    # Without Authorization header and without dependency override, must return 401
+    response = client.post("/v1/chat", json={"message": "hello"})
+    assert response.status_code == 401
+

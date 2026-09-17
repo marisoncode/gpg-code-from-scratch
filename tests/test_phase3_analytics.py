@@ -63,7 +63,8 @@ def sales_permissions() -> ChatPermissions:
 # ── TEST 1: BATCH SIMILARITY INCLUDES TOP EXPLAINING FACTORS (SRS FR-006) ─────
 
 
-def test_batch_similarity_includes_top_explaining_factors_and_disposition(qa_all_permissions: ChatPermissions) -> None:
+@pytest.mark.asyncio
+async def test_batch_similarity_includes_top_explaining_factors_and_disposition(qa_all_permissions: ChatPermissions) -> None:
     """
     SRS FR-006:
     Returns similarity percentage, disposition, and the top factors driving similarity.
@@ -117,7 +118,7 @@ def test_batch_similarity_includes_top_explaining_factors_and_disposition(qa_all
     ]
 
     with patch("app.services.facility_api_service._get_business_container", return_value=mock_container):
-        res = find_similar_batches("B-1021", top_n=5, permissions=qa_all_permissions)
+        res = await find_similar_batches("B-1021", top_n=5, permissions=qa_all_permissions)
 
         assert res["status"] == "found"
         assert res["target_batch_id"] == "B-1021"
@@ -147,7 +148,8 @@ def test_batch_similarity_includes_top_explaining_factors_and_disposition(qa_all
 # ── TEST 2: RISK SCORE CHANGES WHEN CONFIGURABLE WEIGHTS CHANGE ───────────────
 
 
-def test_risk_score_changes_with_configurable_weights(qa_all_permissions: ChatPermissions) -> None:
+@pytest.mark.asyncio
+async def test_risk_score_changes_with_configurable_weights(qa_all_permissions: ChatPermissions) -> None:
     """
     SRS Section 19: Risk weights must be loaded from a configurable source, not hardcoded.
     Proves that risk score changes dynamically when weight configuration changes.
@@ -196,7 +198,7 @@ def test_risk_score_changes_with_configurable_weights(qa_all_permissions: ChatPe
             },
             "thresholds": {"low_risk_max": 25, "medium_risk_max": 60, "high_risk_min": 61},
         }
-        res_a = calculate_risk_score(
+        res_a = await calculate_risk_score(
             batch_id_or_config=batch_config,
             permissions=qa_all_permissions,
             weight_config=config_a,
@@ -213,7 +215,7 @@ def test_risk_score_changes_with_configurable_weights(qa_all_permissions: ChatPe
             },
             "thresholds": {"low_risk_max": 25, "medium_risk_max": 60, "high_risk_min": 61},
         }
-        res_b = calculate_risk_score(
+        res_b = await calculate_risk_score(
             batch_id_or_config=batch_config,
             permissions=qa_all_permissions,
             weight_config=config_b,
@@ -234,7 +236,8 @@ def test_risk_score_changes_with_configurable_weights(qa_all_permissions: ChatPe
 # ── TEST 3: CORRELATION VS CAUSATION STRICT ENFORCEMENT (SRS SECTION 13) ──────
 
 
-def test_trend_output_strictly_bans_causal_language(qa_all_permissions: ChatPermissions) -> None:
+@pytest.mark.asyncio
+async def test_trend_output_strictly_bans_causal_language(qa_all_permissions: ChatPermissions) -> None:
     """
     SRS Section 13: Correlation must NEVER be presented as confirmed causation.
     Banned terms: 'caused by', 'the root cause of', 'responsible for causing', 'led to'.
@@ -247,7 +250,7 @@ def test_trend_output_strictly_bans_causal_language(qa_all_permissions: ChatPerm
     ]
 
     with patch("app.services.facility_api_service._get_business_container", return_value=mock_batch_container):
-        res = detect_trends(
+        res = await detect_trends(
             product_id="DrugZ",
             metric="yield",
             window="90d",
@@ -280,7 +283,8 @@ def test_trend_output_strictly_bans_causal_language(qa_all_permissions: ChatPerm
 # ── TEST 4: TREND OUTPUT COMPLETENESS PER SRS SECTION 13 ──────────────────────
 
 
-def test_trend_output_completeness(qa_all_permissions: ChatPermissions) -> None:
+@pytest.mark.asyncio
+async def test_trend_output_completeness(qa_all_permissions: ChatPermissions) -> None:
     """
     SRS Section 13 requires:
     - Period (window)
@@ -297,7 +301,7 @@ def test_trend_output_completeness(qa_all_permissions: ChatPermissions) -> None:
     ]
 
     with patch("app.services.facility_api_service._get_business_container", return_value=mock_batch_container):
-        res = detect_trends(
+        res = await detect_trends(
             product_id="AntibioticA",
             metric="equipment_deviations",
             window="6m",
@@ -321,21 +325,22 @@ def test_trend_output_completeness(qa_all_permissions: ChatPermissions) -> None:
 # ── TEST 5: PRE-QUERY PERMISSION GATING FOR PHASE 3 ANALYTICS ─────────────────
 
 
-def test_phase3_permission_gating_blocks_sales_and_unauthorized_users(sales_permissions: ChatPermissions) -> None:
+@pytest.mark.asyncio
+async def test_phase3_permission_gating_blocks_sales_and_unauthorized_users(sales_permissions: ChatPermissions) -> None:
     """Pre-query verification must block Sales lens from similarity, risk scoring, and trend detection."""
     mock_container = MagicMock()
 
     with patch("app.services.facility_api_service._get_business_container", return_value=mock_container):
         with pytest.raises(PermissionDeniedError):
-            find_similar_batches("B-1021", permissions=sales_permissions)
+            await find_similar_batches("B-1021", permissions=sales_permissions)
         mock_container.query_items.assert_not_called()
 
         with pytest.raises(PermissionDeniedError):
-            calculate_risk_score("B-1021", permissions=sales_permissions)
+            await calculate_risk_score("B-1021", permissions=sales_permissions)
         mock_container.query_items.assert_not_called()
 
         with pytest.raises(PermissionDeniedError):
-            detect_trends("ProductX", metric="yield", permissions=sales_permissions)
+            await detect_trends("ProductX", metric="yield", permissions=sales_permissions)
         mock_container.query_items.assert_not_called()
 
 

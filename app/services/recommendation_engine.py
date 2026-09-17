@@ -19,6 +19,7 @@ Implements the 8-step pipeline from SRS Section 7.1 in strict order:
 
 from __future__ import annotations
 
+import inspect
 import logging
 from typing import Any
 
@@ -33,7 +34,7 @@ logger = logging.getLogger(__name__)
 ADVISORY_STATUS_LABEL = "DRAFT — requires authorized human approval"
 
 
-def recommend_batch_configuration(
+async def recommend_batch_configuration(
     product_id: str,
     target_quantity: float = 1000.0,
     target_date: str | None = None,
@@ -63,42 +64,64 @@ def recommend_batch_configuration(
     qty = float(target_quantity or 1000.0)
 
     # ── STEP B: RESOLVE PRODUCT AND MASTER FORMULATION ────────────────────────
-    # Read-only Cosmos query for product master specification
-    master_formula: dict[str, Any] = {
-        "product_id": clean_product,
-        "product_name": clean_product,
-        "formulation_version": "v2.1",
-        "standard_batch_size": qty,
-        "required_material_types": ["ACTIVE_INGREDIENT", "EXCIPIENT_BINDER"],
-        "required_equipment_types": ["BLENDER", "TABLET_PRESS"],
-        "required_qualifications": ["Aseptic Technique", "Solid Dosage GMP"],
-        "standard_room": target_location or "Cleanroom-A",
-    }
-
+    # Attempt to derive product specification from historical batch executions
+    past_batches: list[dict[str, Any]] = []
     try:
         batches_container = facility_api_service._get_business_container("batches")
-        past_batches = list(
-            batches_container.query_items(
-                query="SELECT TOP 20 * FROM c WHERE c.product = @prod OR c.product_id = @prod ORDER BY c.created_at DESC",
-                parameters=[{"name": "@prod", "value": clean_product}],
-                enable_cross_partition_query=True,
-            )
+        res = batches_container.query_items(
+            query="SELECT TOP 20 * FROM c WHERE c.product = @prod OR c.product_id = @prod ORDER BY c.created_at DESC",
+            parameters=[{"name": "@prod", "value": clean_product}],
+            enable_cross_partition_query=True,
         )
-        all_batches = facility_api_service._get_business_items("batches")
+        if inspect.isawaitable(res):
+            res = await res
+        past_batches = list(res)
+    except Exception as exc:
+        logger.warning(f"Error querying batches container for {clean_product}: {exc}")
+        past_batches = []
+
+    if not past_batches:
+        raw_batches = facility_api_service._get_business_items("batches")
+        if inspect.isawaitable(raw_batches):
+            all_batches = await raw_batches
+        else:
+            all_batches = raw_batches if isinstance(raw_batches, list) else []
         past_batches = [
             b for b in all_batches
             if b.get("product") == clean_product or b.get("product_id") == clean_product
         ][:20]
-        if past_batches:
-            latest = past_batches[0]
-            if latest.get("formulation_version"):
-                master_formula["formulation_version"] = latest["formulation_version"]
-            if latest.get("room"):
-                master_formula["standard_room"] = latest["room"]
-    except Exception as exc:
-        logger.warning(f"Cosmos read error in resolving master formulation: {exc}")
-        logger.warning(f"Error resolving master formulation from batches: {exc}")
-        past_batches = []
+
+    has_historical_data = bool(past_batches)
+
+    if has_historical_data:
+        latest = past_batches[0]
+        data_source = "HISTORICAL_BATCH_RECORDS"
+        form_ver = str(latest.get("formulation_version") or latest.get("recipe_version") or "1.0")
+        room = target_location or str(latest.get("room") or latest.get("cleanroom") or latest.get("location") or "")
+        req_materials = latest.get("required_material_types") or []
+        req_equipment = latest.get("required_equipment_types") or []
+        req_qualifications = latest.get("required_qualifications") or []
+    else:
+        # NO-FABRICATION COMPLIANCE: When no product master formula exists and no historical batches
+        # are available, use generic baseline defaults but explicitly tag with PLACEHOLDER flag
+        data_source = "PLACEHOLDER_DEFAULTS_NOT_PRODUCT_SPECIFIC"
+        form_ver = "v2.1"
+        room = target_location or "Cleanroom-A"
+        req_materials = ["ACTIVE_INGREDIENT", "EXCIPIENT_BINDER"]
+        req_equipment = ["BLENDER", "TABLET_PRESS"]
+        req_qualifications = ["Aseptic Technique", "Solid Dosage GMP"]
+
+    master_formula: dict[str, Any] = {
+        "product_id": clean_product,
+        "product_name": clean_product,
+        "formulation_version": form_ver,
+        "standard_batch_size": qty,
+        "required_material_types": req_materials,
+        "required_equipment_types": req_equipment,
+        "required_qualifications": req_qualifications,
+        "standard_room": room,
+        "data_source": data_source,
+    }
 
     # ── STEP C: DETERMINE REQUIRED RESOURCES ──────────────────────────────────
     # Candidate pools from facility records
@@ -108,24 +131,57 @@ def recommend_batch_configuration(
 
     try:
         mat_c = facility_api_service._get_business_container("materials")
-        raw_material_pool = list(mat_c.query_items(query="SELECT TOP 20 * FROM c", enable_cross_partition_query=True))
-        raw_material_pool = facility_api_service._get_business_items("materials")[:20]
+        res_m = mat_c.query_items(query="SELECT TOP 20 * FROM c", enable_cross_partition_query=True)
+        if inspect.isawaitable(res_m):
+            res_m = await res_m
+        raw_material_pool = list(res_m)
     except Exception:
         raw_material_pool = []
+    if not raw_material_pool:
+        try:
+            raw_mats = facility_api_service._get_business_items("materials")
+            if inspect.isawaitable(raw_mats):
+                raw_material_pool = (await raw_mats)[:20]
+            else:
+                raw_material_pool = (raw_mats or [])[:20]
+        except Exception:
+            raw_material_pool = []
 
     try:
         eq_c = facility_api_service._get_business_container("equipment")
-        equipment_pool = list(eq_c.query_items(query="SELECT TOP 20 * FROM c", enable_cross_partition_query=True))
-        equipment_pool = facility_api_service._get_business_items("equipment")[:20]
+        res_e = eq_c.query_items(query="SELECT TOP 20 * FROM c", enable_cross_partition_query=True)
+        if inspect.isawaitable(res_e):
+            res_e = await res_e
+        equipment_pool = list(res_e)
     except Exception:
         equipment_pool = []
+    if not equipment_pool:
+        try:
+            raw_eq = facility_api_service._get_business_items("equipment")
+            if inspect.isawaitable(raw_eq):
+                equipment_pool = (await raw_eq)[:20]
+            else:
+                equipment_pool = (raw_eq or [])[:20]
+        except Exception:
+            equipment_pool = []
 
     try:
         tr_c = facility_api_service._get_business_container("training")
-        operator_pool = list(tr_c.query_items(query="SELECT TOP 20 * FROM c", enable_cross_partition_query=True))
-        operator_pool = facility_api_service._get_business_items("training")[:20]
+        res_t = tr_c.query_items(query="SELECT TOP 20 * FROM c", enable_cross_partition_query=True)
+        if inspect.isawaitable(res_t):
+            res_t = await res_t
+        operator_pool = list(res_t)
     except Exception:
         operator_pool = []
+    if not operator_pool:
+        try:
+            raw_tr = facility_api_service._get_business_items("training")
+            if inspect.isawaitable(raw_tr):
+                operator_pool = (await raw_tr)[:20]
+            else:
+                operator_pool = (raw_tr or [])[:20]
+        except Exception:
+            operator_pool = []
 
     # If container returned no items (e.g. in mock test with custom data), seed defaults from past batches
     if not raw_material_pool and past_batches:
@@ -200,6 +256,8 @@ def recommend_batch_configuration(
             "alternative_configurations": [],
             "source_records": [d["resource_id"] for d in disqualifying_factors],
             "required_approvals": ["Corrective maintenance and QA release required before scheduling."],
+            "data_source": data_source,
+            "master_formulation": master_formula,
         }
 
     # ── STEP E: RETRIEVE COMPARABLE HISTORICAL BATCHES ────────────────────────
@@ -247,6 +305,8 @@ def recommend_batch_configuration(
 
     # ── STEP G: GENERATE EXPLANATION, CONFIDENCE, RISK SCORE & EXCEPTIONS ─────
     risk_evaluation = calculate_risk_score(top_config, permissions=permissions)
+    if inspect.isawaitable(risk_evaluation):
+        risk_evaluation = await risk_evaluation
 
     top_reasons = [
         f"Highest historical average yield ({top_config['historical_yield_avg']}%) among eligible configurations.",
@@ -282,6 +342,7 @@ def recommend_batch_configuration(
         "is_advisory_only": True,
         "product_id": clean_product,
         "target_quantity": qty,
+        "data_source": data_source,
         "master_formulation": master_formula,
         "recommended_configuration": top_config,
         "alternative_configurations": alternatives,
@@ -316,13 +377,15 @@ def recommend_batch_configuration(
                 functions_called=[{
                     "name": "recommend_batch_configuration",
                     "parameters": {"product_id": clean_product, "target_quantity": qty},
+                    "data_source": data_source,
                 }],
                 retrieved_record_ids=[s.split()[-1] for s in source_records if " " in s],
                 model_version=risk_evaluation.get("config_version", "v1.0-approved-2026"),
-                final_response=f"[ADVISORY DRAFT] Recommended configuration for {clean_product}: Equipment {top_config['equipment']}, Operators {top_config['operators']}. {ADVISORY_STATUS_LABEL}",
+                final_response=f"[ADVISORY DRAFT] [DATA_SOURCE: {data_source}] Recommended configuration for {clean_product}: Equipment {top_config['equipment']}, Operators {top_config['operators']}. {ADVISORY_STATUS_LABEL}",
                 entity_type="batch_recommendation",
-                traceability_chain="recommendation_engine -> hard_constraints -> historical_ranking -> advisory_draft",
+                traceability_chain=f"recommendation_engine -> hard_constraints -> historical_ranking -> advisory_draft [data_source: {data_source}]",
                 risk_config_version=risk_evaluation.get("config_version", "v1.0-approved-2026"),
+                data_source=data_source,
             )
             loop.create_task(coro)
     except Exception as exc:

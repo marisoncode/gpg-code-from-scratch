@@ -1,6 +1,7 @@
 """Thread and message storage for the chatbot.
 
-Maintains thread document structure with embedded request/response turns in-memory.
+Maintains thread document structure with embedded request/response turns
+backed by MongoDB/Cosmos DB via Motor, with transparent in-memory fallback for local dev.
 """
 
 from __future__ import annotations
@@ -12,9 +13,11 @@ from uuid import uuid4
 
 from fastapi import HTTPException, status
 
+from app.core.database import get_threads_collection, is_mongo_connected
+
 logger = logging.getLogger(__name__)
 
-# In-memory store for chat threads
+# In-memory store for chat threads (fallback for local development)
 _threads_memory_store: dict[str, dict[str, Any]] = {}
 
 
@@ -95,6 +98,7 @@ async def create_thread(
     thread_id = str(uuid4())
     doc: dict[str, Any] = {
         "id": thread_id,
+        "_id": thread_id,
         "user_id": user_id,
         "username": username,
         "title": (title or "Support chat").strip() or "Support chat",
@@ -104,11 +108,26 @@ async def create_thread(
         "updated_at": now,
     }
 
-    _threads_memory_store[thread_id] = doc
+    if is_mongo_connected():
+        col = get_threads_collection()
+        if col is not None:
+            await col.insert_one(dict(doc))
+    else:
+        _threads_memory_store[thread_id] = doc
+
     return _serialize_thread(doc, include_messages=True)
 
 
 async def list_threads(*, user_id: str, limit: int = 20) -> list[dict[str, Any]]:
+    if is_mongo_connected():
+        col = get_threads_collection()
+        if col is not None:
+            cursor = col.find(
+                {"user_id": user_id, "turns.0": {"$exists": True}}
+            ).sort("updated_at", -1)
+            docs = await cursor.to_list(length=limit)
+            return [_serialize_thread(t) for t in docs]
+
     user_threads = [
         t for t in _threads_memory_store.values()
         if t.get("user_id") == user_id and len(t.get("turns", [])) > 0
@@ -118,6 +137,16 @@ async def list_threads(*, user_id: str, limit: int = 20) -> list[dict[str, Any]]
 
 
 async def get_thread(*, thread_id: str, user_id: str) -> dict[str, Any]:
+    if is_mongo_connected():
+        col = get_threads_collection()
+        if col is not None:
+            doc = await col.find_one({"$or": [{"id": thread_id}, {"_id": thread_id}]})
+            if doc:
+                if doc.get("user_id") == user_id:
+                    return _serialize_thread(doc, include_messages=True)
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Thread not found.")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Thread not found.")
+
     if thread_id in _threads_memory_store:
         doc = _threads_memory_store[thread_id]
         if doc.get("user_id") == user_id:
@@ -134,6 +163,14 @@ async def get_or_create_active_thread(*, user_id: str, username: str) -> dict[st
 
 
 async def delete_thread(*, thread_id: str, user_id: str) -> None:
+    if is_mongo_connected():
+        col = get_threads_collection()
+        if col is not None:
+            res = await col.delete_one({"$or": [{"id": thread_id}, {"_id": thread_id}], "user_id": user_id})
+            if res.deleted_count > 0:
+                return
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Thread not found.")
+
     if thread_id in _threads_memory_store and _threads_memory_store[thread_id].get("user_id") == user_id:
         del _threads_memory_store[thread_id]
         return
@@ -142,10 +179,25 @@ async def delete_thread(*, thread_id: str, user_id: str) -> None:
 
 
 async def set_greeting(*, thread_id: str, user_id: str, greeting: str) -> dict[str, Any]:
+    now = _utcnow()
+    clean_greeting = greeting.strip()
+
+    if is_mongo_connected():
+        col = get_threads_collection()
+        if col is not None:
+            await get_thread(thread_id=thread_id, user_id=user_id)
+            await col.update_one(
+                {"$or": [{"id": thread_id}, {"_id": thread_id}], "user_id": user_id},
+                {"$set": {"greeting": clean_greeting, "updated_at": now}},
+            )
+            doc = await col.find_one({"$or": [{"id": thread_id}, {"_id": thread_id}]})
+            if doc:
+                return _serialize_thread(doc, include_messages=True)
+
     thread = await get_thread(thread_id=thread_id, user_id=user_id)
     doc = _threads_memory_store.get(thread_id, thread)
-    doc["greeting"] = greeting.strip()
-    doc["updated_at"] = _utcnow()
+    doc["greeting"] = clean_greeting
+    doc["updated_at"] = now
     _threads_memory_store[thread_id] = doc
     return _serialize_thread(doc, include_messages=True)
 
@@ -158,11 +210,6 @@ async def append_turn(
     response: str,
 ) -> dict[str, Any]:
     """Persist one user request + AI response as an embedded turn."""
-    await get_thread(thread_id=thread_id, user_id=user_id)
-    doc = _threads_memory_store.get(thread_id)
-    if not doc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Thread not found.")
-
     now = _utcnow()
     req = request.strip()
     res = response.strip()
@@ -172,6 +219,27 @@ async def append_turn(
         "response": res,
         "created_at": now,
     }
+
+    if is_mongo_connected():
+        col = get_threads_collection()
+        if col is not None:
+            thread = await get_thread(thread_id=thread_id, user_id=user_id)
+            update_fields: dict[str, Any] = {"updated_at": now}
+            if req and (not thread.get("title") or thread.get("title") == "Support chat"):
+                update_fields["title"] = req[:80]
+
+            await col.update_one(
+                {"$or": [{"id": thread_id}, {"_id": thread_id}], "user_id": user_id},
+                {"$push": {"turns": turn}, "$set": update_fields},
+            )
+            doc = await col.find_one({"$or": [{"id": thread_id}, {"_id": thread_id}]})
+            if doc:
+                return _serialize_thread(doc, include_messages=True)
+
+    await get_thread(thread_id=thread_id, user_id=user_id)
+    doc = _threads_memory_store.get(thread_id)
+    if not doc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Thread not found.")
 
     doc.setdefault("turns", []).append(turn)
     doc["updated_at"] = now

@@ -38,6 +38,17 @@ class PermissionDeniedError(Exception):
         self.resource = resource
 
 
+class IdentityResolutionError(HTTPException):
+    """Raised when user identity cannot be resolved from token, parameters, or context."""
+
+    def __init__(self, detail: str = "Unable to resolve user identity.") -> None:
+        super().__init__(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=detail,
+        )
+        self.message = detail
+
+
 def parse_permissions_payload(data: Any) -> ChatPermissions:
     """Parse permissions response payload into ChatPermissions model."""
     if not isinstance(data, dict):
@@ -164,18 +175,49 @@ async def resolve_permissions(token: str, user_id: str | None = None) -> ChatPer
         get_current_user_name,
     )
 
-    target_user_id = (user_id or "").strip() or get_current_user_id().strip() or "3ea3f803-2512-4cee-821c-5357504bd2a0"
-    uname = get_current_user_name().strip() or "Pukazh Vel"
-    col_id = get_current_collection_id().strip() or "sales"
+    # SECURITY BOUNDARY:
+    # Resolve user identity strictly from verified token claims whenever available.
+    token_user_id = ""
+    token_user_name = ""
+    if clean_token:
+        try:
+            from app.core.auth import decode_facility_token
+            decoded = decode_facility_token(clean_token)
+            token_user_id = (decoded.user_id or "").strip()
+            token_user_name = (decoded.name or "").strip()
+        except Exception:
+            pass
 
-    headers = {
+    passed_id = (user_id or "").strip()
+    if token_user_id:
+        if passed_id and passed_id != token_user_id:
+            logger.warning(
+                "Security notice: resolve_permissions called with user_id '%s' differing from token user_id '%s'. "
+                "Ignoring passed user_id and strictly using token identity.",
+                passed_id,
+                token_user_id,
+            )
+        target_user_id = token_user_id
+    else:
+        target_user_id = passed_id or get_current_user_id().strip()
+
+    if not target_user_id:
+        raise IdentityResolutionError(
+            "Unable to resolve user identity for permissions check: user_id is missing from token, parameters, and context."
+        )
+
+    uname = token_user_name or get_current_user_name().strip() or target_user_id
+    col_id = get_current_collection_id().strip()
+
+    headers: dict[str, str] = {
         "Authorization": f"Bearer {clean_token}",
         "Accept": "application/json",
-        "collectionid": col_id,
         "currentdate": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
         "userid": target_user_id,
         "username": uname,
     }
+    if col_id:
+        headers["collectionid"] = col_id
 
     # 1. Primary Live Authority: Query CPG Facility User API ManageUser/{user_id}
     if target_user_id and len(target_user_id) == 36 and target_user_id.count("-") == 4:
@@ -313,6 +355,7 @@ __all__ = [
     "DashboardLens",
     "DashboardScope",
     "PermissionDeniedError",
+    "IdentityResolutionError",
     "wants_dashboard_data",
     "requested_scopes",
     "normalize_lens",

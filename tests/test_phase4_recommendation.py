@@ -50,7 +50,8 @@ def sales_permissions() -> ChatPermissions:
 
 
 # ── TEST 1: DEDICATED PRECEDENCE TEST (SRS SECTION 19) ────────────────────────
-def test_hard_eligibility_precedence_over_historical_performance(qa_all_permissions: ChatPermissions) -> None:
+@pytest.mark.asyncio
+async def test_hard_eligibility_precedence_over_historical_performance(qa_all_permissions: ChatPermissions) -> None:
     """
     SRS Section 19 Hard Precedence Rule:
     'Current eligibility rules take precedence over historical performance.'
@@ -126,7 +127,7 @@ def test_hard_eligibility_precedence_over_historical_performance(qa_all_permissi
         return c
 
     with patch.object(facility_api_service, "_get_business_container", side_effect=mock_get_container):
-        result = recommend_batch_configuration(
+        result = await recommend_batch_configuration(
             product_id="Aspirin 500mg",
             target_quantity=1000.0,
             permissions=qa_all_permissions,
@@ -169,7 +170,8 @@ def test_hard_eligibility_precedence_over_historical_performance(qa_all_permissi
 
 
 # ── TEST 2: MANDATORY ADVISORY & DRAFT FLAGS (SRS 3.2 & 7.3) ───────────────────
-def test_mandatory_advisory_flags_and_no_autonomous_release(qa_all_permissions: ChatPermissions) -> None:
+@pytest.mark.asyncio
+async def test_mandatory_advisory_flags_and_no_autonomous_release(qa_all_permissions: ChatPermissions) -> None:
     """
     SRS Section 3.2 & 7.3:
     - Never creates, writes, or approves an actual batch record.
@@ -199,7 +201,7 @@ def test_mandatory_advisory_flags_and_no_autonomous_release(qa_all_permissions: 
         return c
 
     with patch.object(facility_api_service, "_get_business_container", side_effect=mock_get_container) as mock_cont:
-        result = recommend_batch_configuration(
+        result = await recommend_batch_configuration(
             product_id="Ibuprofen 200mg",
             permissions=qa_all_permissions,
         )
@@ -219,7 +221,8 @@ def test_mandatory_advisory_flags_and_no_autonomous_release(qa_all_permissions: 
 
 
 # ── TEST 3: ALL REQUIRED FIELDS OF SRS SECTION 7.3 PRESENT ────────────────────
-def test_all_section_7_3_fields_present(qa_all_permissions: ChatPermissions) -> None:
+@pytest.mark.asyncio
+async def test_all_section_7_3_fields_present(qa_all_permissions: ChatPermissions) -> None:
     """
     SRS Section 7.3 requires:
     - recommended configuration
@@ -256,7 +259,7 @@ def test_all_section_7_3_fields_present(qa_all_permissions: ChatPermissions) -> 
         return c
 
     with patch.object(facility_api_service, "_get_business_container", side_effect=mock_get_container):
-        result = recommend_batch_configuration(
+        result = await recommend_batch_configuration(
             product_id="Paracetamol",
             target_quantity=500.0,
             permissions=qa_all_permissions,
@@ -288,7 +291,8 @@ def test_all_section_7_3_fields_present(qa_all_permissions: ChatPermissions) -> 
 
 
 # ── TEST 4: BLOCKED WHEN NO ELIGIBLE RESOURCES SURVIVE HARD CONSTRAINTS ────────
-def test_blocked_when_no_eligible_resources_exist(qa_all_permissions: ChatPermissions) -> None:
+@pytest.mark.asyncio
+async def test_blocked_when_no_eligible_resources_exist(qa_all_permissions: ChatPermissions) -> None:
     """
     If all available resources are disqualified under hard constraints, the recommendation
     engine must block configuration creation and return a descriptive blocked status.
@@ -306,7 +310,7 @@ def test_blocked_when_no_eligible_resources_exist(qa_all_permissions: ChatPermis
         return c
 
     with patch.object(facility_api_service, "_get_business_container", side_effect=mock_get_container):
-        result = recommend_batch_configuration(
+        result = await recommend_batch_configuration(
             product_id="BlockedDrug",
             permissions=qa_all_permissions,
         )
@@ -319,14 +323,15 @@ def test_blocked_when_no_eligible_resources_exist(qa_all_permissions: ChatPermis
 
 
 # ── TEST 5: PRE-QUERY PERMISSION GATING (SECURITY) ─────────────────────────────
-def test_pre_query_permission_gating_blocks_sales_role(sales_permissions: ChatPermissions) -> None:
+@pytest.mark.asyncio
+async def test_pre_query_permission_gating_blocks_sales_role(sales_permissions: ChatPermissions) -> None:
     """
     Ensures that calling recommend_batch_configuration without Batch and Production
     permissions raises PermissionDeniedError BEFORE executing any database queries.
     """
     with patch.object(facility_api_service, "_get_business_container") as mock_db:
         with pytest.raises(PermissionDeniedError) as exc_info:
-            recommend_batch_configuration(
+            await recommend_batch_configuration(
                 product_id="Aspirin 500mg",
                 permissions=sales_permissions,
             )
@@ -368,7 +373,7 @@ async def test_recommendation_logged_to_audit_trail(qa_all_permissions: ChatPerm
 
     with patch.object(facility_api_service, "_get_business_container", side_effect=mock_get_container):
         with patch.object(audit_service, "log_audit_entry", new_callable=AsyncMock) as mock_audit:
-            recommend_batch_configuration(
+            await recommend_batch_configuration(
                 product_id="Sterile Saline",
                 target_quantity=2000.0,
                 permissions=qa_all_permissions,
@@ -434,4 +439,82 @@ async def test_ai_service_offline_batch_recommendation_flow(qa_all_permissions: 
             assert "Recommended Configuration" in text
             assert "Risk Indicator" in text
             assert "Required Human Approvals" in text
+
+
+# ── TEST 8: DATA SOURCE TRANSPARENCY & PLACEHOLDER TAGGING ────────────────────
+@pytest.mark.asyncio
+async def test_recommendation_with_no_historical_batches_flags_placeholder_data_source(
+    qa_all_permissions: ChatPermissions,
+) -> None:
+    """
+    When a product has no historical batches, recommend_batch_configuration MUST
+    explicitly flag data_source as 'PLACEHOLDER_DEFAULTS_NOT_PRODUCT_SPECIFIC' to prevent
+    silent fabrication of master data.
+    """
+    def mock_get_container(name: str) -> MagicMock:
+        c = MagicMock()
+        if name == "batches":
+            # No historical batches for this product
+            c.query_items.return_value = iter([])
+        elif name == "materials":
+            c.query_items.return_value = iter([{"id": "RM-01", "lot_number": "RM-01", "quality_status": "RELEASED"}])
+        elif name == "equipment":
+            c.query_items.return_value = iter([{"id": "EQ-01", "asset_id": "EQ-01", "pm_status": "QUALIFIED"}])
+        elif name == "training":
+            c.query_items.return_value = iter([{"operator_id": "OP-01", "status": "CURRENT"}])
+        return c
+
+    with patch.object(facility_api_service, "_get_business_container", side_effect=mock_get_container), \
+         patch.object(facility_api_service, "_get_business_items", return_value=[]):
+        result = await recommend_batch_configuration(
+            product_id="Novel-Drug-NoHistory",
+            permissions=qa_all_permissions,
+        )
+
+        assert result["data_source"] == "PLACEHOLDER_DEFAULTS_NOT_PRODUCT_SPECIFIC"
+        assert result["master_formulation"]["data_source"] == "PLACEHOLDER_DEFAULTS_NOT_PRODUCT_SPECIFIC"
+
+
+@pytest.mark.asyncio
+async def test_recommendation_with_historical_batches_indicates_real_data_source(
+    qa_all_permissions: ChatPermissions,
+) -> None:
+    """
+    When matching historical batch records exist, data_source must indicate real historical data
+    and MUST NOT be 'PLACEHOLDER_DEFAULTS_NOT_PRODUCT_SPECIFIC'.
+    """
+    mock_batch = {
+        "id": "B-ASP-01",
+        "product": "Aspirin 500mg",
+        "formulation_version": "v1.2",
+        "room": "Cleanroom-A",
+        "operators": ["OP-01"],
+        "equipment": ["EQ-01"],
+        "materials": ["RM-01"],
+        "yield_percentage": 98.5,
+    }
+
+    def mock_get_container(name: str) -> MagicMock:
+        c = MagicMock()
+        if name == "batches":
+            c.query_items.return_value = iter([mock_batch])
+        elif name == "materials":
+            c.query_items.return_value = iter([{"id": "RM-01", "lot_number": "RM-01", "quality_status": "RELEASED"}])
+        elif name == "equipment":
+            c.query_items.return_value = iter([{"id": "EQ-01", "asset_id": "EQ-01", "pm_status": "QUALIFIED"}])
+        elif name == "training":
+            c.query_items.return_value = iter([{"operator_id": "OP-01", "status": "CURRENT"}])
+        return c
+
+    with patch.object(facility_api_service, "_get_business_container", side_effect=mock_get_container):
+        result = await recommend_batch_configuration(
+            product_id="Aspirin 500mg",
+            permissions=qa_all_permissions,
+        )
+
+        # Asserts data_source indicates real data and is NOT placeholder
+        assert result["data_source"] == "HISTORICAL_BATCH_RECORDS"
+        assert result["data_source"] != "PLACEHOLDER_DEFAULTS_NOT_PRODUCT_SPECIFIC"
+        assert result["master_formulation"]["data_source"] == "HISTORICAL_BATCH_RECORDS"
+
 

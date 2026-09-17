@@ -6,17 +6,25 @@ class Settings(BaseSettings):
     environment: str = "production"
 
     # Permissions & Facility APIs (Endpoint-based Identity & Access Resolution)
-    permissions_api: str = "https://sales.cpguardian.com/users/roles"
-    facility_api: str = "https://facility-user-api.cpguardian.com/api/"
-    production_api: str = "https://production-api.cpguardian.com/api/"
-    compliance_api: str = "https://compliance-api.cpguardian.com/api/"
-    order_api: str = "https://order-api.cpguardian.com/api/"
-    notification_hub_api: str = "https://notification-api.cpguardian.com/"
+    # Required in production; empty by default to prevent silent misconfiguration.
+    permissions_api: str = ""
+    facility_api: str = ""
+    production_api: str = ""
+    compliance_api: str = ""
+    order_api: str = ""
+    notification_hub_api: str = ""
     collection_id: str = "sales"
 
+    # MongoDB / Cosmos DB (Mongo API) persistence
+    # Required in production; empty by default to prevent silent misconfiguration.
+    mongo_connection_string: str = ""
+    mongo_database_name: str = ""
+    mongo_threads_collection: str = "chat_threads"
+    mongo_audit_collection: str = "audit_log"
 
     # Frontend origin for CORS
-    frontend_origin: str = "http://localhost:4200"
+    # Required in production; empty by default to prevent silent misconfiguration.
+    frontend_origin: str = ""
     cors_origins: str = "http://127.0.0.1:4200,http://localhost:4200"
 
     # AI configuration (strictly OpenAI-compatible)

@@ -11,14 +11,18 @@ from __future__ import annotations
 
 import contextvars
 from datetime import datetime, timezone
+import inspect
 import logging
 from typing import Any, Callable
 
 import httpx
 
 from app.core.config import settings
-from app.services.capabilities import ChatPermissions
-from app.services.permissions_service import PermissionDeniedError, verify_resource_permission
+from app.services.permissions_service import (
+    IdentityResolutionError,
+    PermissionDeniedError,
+    verify_resource_permission,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -56,21 +60,40 @@ def get_current_user_name() -> str:
 
 
 def get_current_collection_id() -> str:
-    return _request_collection_id.get() or (settings.collection_id or "sales").strip()
+    return _request_collection_id.get() or (settings.collection_id or "").strip()
 
 
 class FacilitySecurityError(Exception):
     """Raised when security boundaries are violated."""
 
 
-# Pluggable HTTP client override for testing/mocking
-_http_client_override: httpx.Client | None = None
+# Shared AsyncClient instance across requests and pluggable HTTP client override for testing/mocking
+_shared_async_client: httpx.AsyncClient | None = None
+_http_client_override: Any = None
 # In-memory mock database for testing without live HTTP endpoints
 _mock_database: dict[str, list[dict[str, Any]]] = {}
 
 
-def set_http_client(client: httpx.Client | None) -> None:
-    """Inject a test or mock httpx.Client."""
+async def init_http_client() -> None:
+    """Initialize shared httpx.AsyncClient singleton."""
+    global _shared_async_client
+    if _shared_async_client is None or _shared_async_client.is_closed:
+        _shared_async_client = httpx.AsyncClient(timeout=10.0)
+
+
+async def close_http_client() -> None:
+    """Gracefully close shared httpx.AsyncClient singleton."""
+    global _shared_async_client
+    if _shared_async_client is not None and not _shared_async_client.is_closed:
+        try:
+            await _shared_async_client.aclose()
+        except RuntimeError:
+            pass
+    _shared_async_client = None
+
+
+def set_http_client(client: Any) -> None:
+    """Inject a test or mock httpx client (sync Client, AsyncClient, or Mock)."""
     global _http_client_override
     _http_client_override = client
 
@@ -85,34 +108,113 @@ def get_mock_database() -> dict[str, list[dict[str, Any]]]:
     return _mock_database
 
 
-def _get_http_client() -> httpx.Client:
-    global _http_client_override
+def _get_http_client() -> Any:
+    global _http_client_override, _shared_async_client
     if _http_client_override is not None:
         return _http_client_override
-    return httpx.Client(timeout=10.0)
+    if _shared_async_client is None or _shared_async_client.is_closed:
+        _shared_async_client = httpx.AsyncClient(timeout=10.0)
+    return _shared_async_client
 
 
 def _get_headers(token: str | None = None) -> dict[str, str]:
     tok = (token or get_current_token()).strip()
     col_id = get_current_collection_id()
-    uid = get_current_user_id() or "3ea3f803-2512-4cee-821c-5357504bd2a0"
-    uname = get_current_user_name() or "Pukazh Vel"
+    uid = get_current_user_id().strip()
+    uname = get_current_user_name().strip()
 
-    headers = {
+    # If context is empty, extract user identity dynamically from the active token
+    if (not uid or not uname) and tok:
+        try:
+            from app.core.auth import decode_facility_token
+            decoded = decode_facility_token(tok)
+            uid = uid or (decoded.user_id or "").strip()
+            uname = uname or (decoded.name or "").strip()
+        except Exception:
+            pass
+
+    if not uid:
+        raise IdentityResolutionError(
+            "Unable to resolve user identity for downstream API request: user_id is missing from context and token."
+        )
+
+    headers: dict[str, str] = {
         "Accept": "application/json",
-        "collectionid": col_id,
         "currentdate": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+        "userid": uid,
+        "username": uname or uid,
     }
-    if uid:
-        headers["userid"] = uid
-    if uname:
-        headers["username"] = uname
+    if col_id:
+        headers["collectionid"] = col_id
     if tok:
         headers["Authorization"] = f"Bearer {tok}"
     return headers
 
 
-def _fetch_from_api(
+def _build_api_url(base_url: str, path: str) -> str:
+    """Safely build a microservice API URL ensuring the /api/ prefix is always present and clean."""
+    clean_base = (base_url or "").strip().rstrip("/")
+    if clean_base.endswith("/api"):
+        clean_base = clean_base[:-4]
+    clean_path = (path or "").strip().lstrip("/")
+    if clean_path.startswith("api/"):
+        clean_path = clean_path[4:]
+    return f"{clean_base}/api/{clean_path}"
+
+
+def normalize_cpg_record(item: Any) -> Any:
+    """
+    Normalize ASP.NET Core PascalCase keys to standard lowercase/snake_case aliases
+    while preserving original keys for backward compatibility.
+    """
+    if not isinstance(item, dict):
+        return item
+
+    norm: dict[str, Any] = dict(item)
+    for k, v in list(item.items()):
+        lower_k = k.lower()
+        if lower_k not in norm:
+            norm[lower_k] = v
+
+    # Domain specific key aliases
+    if "Lot_number" in item or "lot_number" in norm:
+        lot = item.get("Lot_number") or norm.get("lot_number")
+        norm.setdefault("batch_number", lot)
+        norm.setdefault("lot_number", lot)
+
+    if "MFR_name" in item or "mfr_name" in norm:
+        mfr = item.get("MFR_name") or norm.get("mfr_name")
+        norm.setdefault("product_name", mfr)
+        norm.setdefault("product", mfr)
+
+    if "Status" in item or "status" in norm:
+        st = item.get("Status") or norm.get("status")
+        norm.setdefault("status", st)
+
+    if "Id" in item or "id" in norm:
+        ident = item.get("Id") or norm.get("id")
+        norm.setdefault("id", ident)
+
+    return norm
+
+
+def unwrap_cpg_response(data: Any) -> Any:
+    """Unwrap standard CPG ASP.NET Core response envelope (e.g. {"result": ...})."""
+    if isinstance(data, dict):
+        if "result" in data:
+            res = data["result"]
+            if isinstance(res, list):
+                return [normalize_cpg_record(x) for x in res]
+            elif isinstance(res, dict):
+                return normalize_cpg_record(res)
+            return res
+        return normalize_cpg_record(data)
+    elif isinstance(data, list):
+        return [normalize_cpg_record(x) for x in data]
+    return data
+
+
+async def _fetch_from_api(
     base_url: str,
     path: str,
     *,
@@ -133,20 +235,30 @@ def _fetch_from_api(
             return 200, _mock_database[collection_fallback]
         return 503, None
 
-    url = f"{clean_base.rstrip('/')}/{path.lstrip('/')}"
+    url = _build_api_url(clean_base, path)
     headers = _get_headers(token)
 
     try:
         client = _get_http_client()
         res = client.get(url, params=params, headers=headers)
+        if inspect.isawaitable(res):
+            res = await res
         if res.status_code == 200:
             try:
-                return 200, res.json()
+                parsed = res.json()
+                return 200, unwrap_cpg_response(parsed)
             except Exception:
                 return 200, res.text
+        logger.warning("Downstream API %s responded with status %s", url, res.status_code)
+        if settings.is_production:
+            return res.status_code, None
+        if collection_fallback and collection_fallback in _mock_database:
+            return 200, _mock_database[collection_fallback]
         return res.status_code, None
     except Exception as exc:
-        logger.warning(f"HTTP call to {url} failed: {exc}")
+        logger.warning("HTTP call to %s failed: %s", url, exc)
+        if settings.is_production:
+            return 503, None
         if collection_fallback and collection_fallback in _mock_database:
             return 200, _mock_database[collection_fallback]
         return 503, None
@@ -171,21 +283,23 @@ def _get_business_container(container_name: str):
         def __init__(self, name: str):
             self.name = name
 
-        def query_items(self, query: str = "", parameters: list | None = None, enable_cross_partition_query: bool = True):
-            return _get_business_items(self.name)
+        async def query_items(self, query: str = "", parameters: list | None = None, enable_cross_partition_query: bool = True):
+            return await _safe_fetch_items(self.name)
 
     return _DownstreamContainerAdapter(container_name)
 
 
-def _get_business_items(collection_name: str) -> list[dict[str, Any]]:
+async def _get_business_items(collection_name: str) -> list[dict[str, Any]]:
     """Retrieve items for a business collection, honoring test mocks or fetching downstream."""
     if _is_container_mocked():
         try:
             container = _get_business_container(collection_name)
             if hasattr(container, "query_items"):
-                items = list(container.query_items())
-                if items:
-                    return items
+                items = container.query_items()
+                if inspect.isawaitable(items):
+                    items = await items
+                if items is not None:
+                    return list(items)
         except Exception:
             pass
 
@@ -193,27 +307,45 @@ def _get_business_items(collection_name: str) -> list[dict[str, Any]]:
         return list(_mock_database[collection_name])
 
     if collection_name == "batches":
-        status_code, data = _fetch_from_api(settings.production_api, "BatchRecord", collection_fallback="batches")
-        if status_code != 200:
-            status_code, data = _fetch_from_api(settings.production_api, "batches", collection_fallback="batches")
+        status_code, data = await _fetch_from_api(settings.production_api, "BatchRecord", collection_fallback="batches")
     elif collection_name == "deviations":
-        status_code, data = _fetch_from_api(settings.compliance_api, "deviations", collection_fallback="deviations")
+        status_code, data = await _fetch_from_api(settings.compliance_api, "v1/TaskManagement", collection_fallback="deviations")
     elif collection_name == "environmental_monitoring":
-        status_code, data = _fetch_from_api(settings.compliance_api, "environmental-monitoring", collection_fallback="environmental_monitoring")
+        status_code, data = await _fetch_from_api(settings.compliance_api, "EnvironmentalMonitoring", collection_fallback="environmental_monitoring")
+    elif collection_name == "training":
+        status_code, data = await _fetch_from_api(settings.compliance_api, "Training", collection_fallback="training")
+    elif collection_name == "equipment":
+        status_code, data = await _fetch_from_api(settings.compliance_api, "Equipment", collection_fallback="equipment")
+    elif collection_name == "materials":
+        status_code, data = await _fetch_from_api(settings.production_api, "ComponentChildInventory", collection_fallback="materials")
+    elif collection_name == "inventory":
+        status_code, data = await _fetch_from_api(settings.production_api, "ChemicalChildInventory", collection_fallback="inventory")
     else:
-        status_code, data = _fetch_from_api(settings.facility_api, collection_name, collection_fallback=collection_name)
+        status_code, data = await _fetch_from_api(settings.facility_api, collection_name, collection_fallback=collection_name)
 
     if status_code == 200 and isinstance(data, list):
-        return data
+        return [normalize_cpg_record(x) for x in data]
     if status_code == 200 and isinstance(data, dict):
-        return data.get("result") or data.get(collection_name, [data])
+        raw = data.get("result") or data.get(collection_name, [data])
+        if isinstance(raw, list):
+            return [normalize_cpg_record(x) for x in raw]
+        elif isinstance(raw, dict):
+            return [normalize_cpg_record(raw)]
     return []
+
+
+async def _safe_fetch_items(collection_name: str) -> list[dict[str, Any]]:
+    """Helper to call _get_business_items whether it was patched with a sync mock or async def."""
+    res = _get_business_items(collection_name)
+    if inspect.isawaitable(res):
+        return await res
+    return res if isinstance(res, list) else []
 
 
 # ── CORE DOMAIN QUERY FUNCTIONS ───────────────────────────────────────────────
 
 
-def get_batch_by_id(
+async def get_batch_by_id(
     batch_id: str,
     permissions: ChatPermissions | None = None,
     token: str | None = None,
@@ -233,8 +365,11 @@ def get_batch_by_id(
         try:
             container = _get_business_container("batches")
             if hasattr(container, "query_items"):
-                items = list(container.query_items(parameters=[{"name": "@id", "value": clean_id}]))
+                items = container.query_items(parameters=[{"name": "@id", "value": clean_id}])
+                if inspect.isawaitable(items):
+                    items = await items
                 if items:
+                    items = list(items)
                     for b in items:
                         if b.get("id") == clean_id or b.get("batch_number") == clean_id or b.get("Lot_number") == clean_id:
                             return {"batch": b, "record_id": b.get("id", clean_id), "status": "found"}
@@ -247,31 +382,43 @@ def get_batch_by_id(
     # If clean_id looks like a GUID, query BatchRecord/{clean_id} directly
     is_guid = len(clean_id) == 36 and clean_id.count("-") == 4
     if is_guid:
-        status_code, data = _fetch_from_api(
+        status_code, data = await _fetch_from_api(
             settings.production_api,
             f"BatchRecord/{clean_id}",
             token=token,
+            collection_fallback="batches",
         )
         if status_code == 200 and isinstance(data, dict):
             batch = data.get("result", data.get("batch", data))
             if isinstance(batch, dict):
-                return {"batch": batch, "record_id": batch.get("id", clean_id), "status": "found"}
+                return {"batch": normalize_cpg_record(batch), "record_id": batch.get("id", clean_id), "status": "found"}
 
-    # Query BatchRecord by Lot_number query param
-    status_code, data = _fetch_from_api(
+    # 2. Query BatchRecord by Lot_number query param
+    status_code, data = await _fetch_from_api(
         settings.production_api,
         "BatchRecord",
         params={"Lot_number": clean_id},
         token=token,
+        collection_fallback="batches",
     )
-    if status_code == 200 and isinstance(data, dict):
-        if data.get("result"):
-            records = data["result"]
-            if isinstance(records, list) and len(records) > 0:
-                summary = records[0]
-                guid = summary.get("id")
-                if guid:
-                    s_code, d_data = _fetch_from_api(
+    if status_code == 200:
+        records: list[dict[str, Any]] = []
+        if isinstance(data, list):
+            records = data
+        elif isinstance(data, dict):
+            records = data.get("result") or data.get("batches") or [data]
+
+        for b in records:
+            b_norm = normalize_cpg_record(b)
+            if (
+                b_norm.get("lot_number") == clean_id
+                or b_norm.get("batch_number") == clean_id
+                or b_norm.get("id") == clean_id
+                or b_norm.get("batch_name") == clean_id
+            ):
+                guid = b_norm.get("id")
+                if guid and len(str(guid)) == 36 and str(guid).count("-") == 4:
+                    s_code, d_data = await _fetch_from_api(
                         settings.production_api,
                         f"BatchRecord/{guid}",
                         token=token,
@@ -279,23 +426,12 @@ def get_batch_by_id(
                     if s_code == 200 and isinstance(d_data, dict):
                         full_batch = d_data.get("result", d_data)
                         if isinstance(full_batch, dict):
-                            return {"batch": full_batch, "record_id": full_batch.get("id", clean_id), "status": "found"}
-                return {"batch": summary, "record_id": summary.get("id", clean_id), "status": "found"}
-        elif "id" in data or "batch_number" in data or "batch" in data:
-            batch = data.get("batch", data)
-            return {"batch": batch, "record_id": batch.get("id", clean_id), "status": "found"}
+                            return {"batch": normalize_cpg_record(full_batch), "record_id": full_batch.get("id", clean_id), "status": "found"}
+                return {"batch": b_norm, "record_id": b_norm.get("id", clean_id), "status": "found"}
 
-    # 2. Fallback: Query standard REST endpoint batches/{clean_id}
-    status_code, data = _fetch_from_api(
-        settings.production_api,
-        f"batches/{clean_id}",
-        token=token,
-        collection_fallback="batches",
-    )
-
-    if status_code == 200 and isinstance(data, dict):
-        batch = data.get("batch", data)
-        return {"batch": batch, "record_id": batch.get("id", clean_id), "status": "found"}
+        if records:
+            first_norm = normalize_cpg_record(records[0])
+            return {"batch": first_norm, "record_id": first_norm.get("id", clean_id), "status": "found"}
 
     return {
         "error": f"Batch record {clean_id} is unavailable or not found.",
@@ -304,7 +440,7 @@ def get_batch_by_id(
     }
 
 
-def get_batches(
+async def get_batches(
     status: str | None = None,
     limit: int = 10,
     permissions: ChatPermissions | None = None,
@@ -313,47 +449,45 @@ def get_batches(
     """
     Retrieve batch records, optionally filtered by status, from PRODUCTION_API.
     Enforces permission check BEFORE request.
-    Supports both BatchRecord and batches endpoints.
     """
     verify_resource_permission(permissions, "batch")
-    params: dict[str, Any] = {"limit": min(limit, 50)}
+    params: dict[str, Any] = {"pageSize": min(limit, 50)}
     if status:
-        params["status"] = status.strip().upper()
+        params["Status"] = status.strip()
 
     if _is_container_mocked():
         try:
             container = _get_business_container("batches")
             if hasattr(container, "query_items"):
-                items = list(container.query_items())
-                if status:
-                    st = status.strip().upper()
-                    items = [b for b in items if str(b.get("Status") or b.get("status") or "").upper() == st]
-                return items[:limit]
+                items = container.query_items()
+                if inspect.isawaitable(items):
+                    items = await items
+                if items is not None:
+                    items = list(items)
+                    if status:
+                        st = status.strip().upper()
+                        items = [b for b in items if str(b.get("Status") or b.get("status") or "").upper() == st]
+                    return items[:limit]
         except Exception:
             pass
 
-    # Try BatchRecord first (production API .NET route), fallback to batches
-    status_code, data = _fetch_from_api(
+    status_code, data = await _fetch_from_api(
         settings.production_api,
         "BatchRecord",
         params=params,
         token=token,
         collection_fallback="batches",
     )
-    if status_code != 200:
-        status_code, data = _fetch_from_api(
-            settings.production_api,
-            "batches",
-            params=params,
-            token=token,
-            collection_fallback="batches",
-        )
 
     items: list[dict[str, Any]] = []
     if status_code == 200 and isinstance(data, list):
-        items = data
+        items = [normalize_cpg_record(x) for x in data]
     elif status_code == 200 and isinstance(data, dict):
-        items = data.get("result") or data.get("batches") or [data]
+        raw = data.get("result") or data.get("batches") or [data]
+        if isinstance(raw, list):
+            items = [normalize_cpg_record(x) for x in raw]
+        elif isinstance(raw, dict):
+            items = [normalize_cpg_record(raw)]
 
     if status:
         st = status.strip().upper()
@@ -361,13 +495,13 @@ def get_batches(
     return items[:limit]
 
 
-def get_operator_training_status(
+async def get_operator_training_status(
     operator_id: str,
     permissions: ChatPermissions | None = None,
     token: str | None = None,
 ) -> dict[str, Any]:
     """
-    Retrieve operator qualifications from FACILITY_API.
+    Retrieve operator qualifications from COMPLIANCE_API (Training).
     Enforces permission check BEFORE request.
     """
     verify_resource_permission(permissions, "training")
@@ -379,8 +513,11 @@ def get_operator_training_status(
         try:
             container = _get_business_container("training")
             if hasattr(container, "query_items"):
-                items = list(container.query_items(parameters=[{"name": "@oid", "value": clean_id}]))
+                items = container.query_items(parameters=[{"name": "@oid", "value": clean_id}])
+                if inspect.isawaitable(items):
+                    items = await items
                 if items:
+                    items = list(items)
                     return {
                         "operator_id": clean_id,
                         "training_records": items,
@@ -395,27 +532,35 @@ def get_operator_training_status(
         except Exception:
             pass
 
-    status_code, data = _fetch_from_api(
-        settings.facility_api,
-        f"training/{clean_id}",
+    # Real Compliance API: Query Training by Name parameter or by ID
+    status_code, data = await _fetch_from_api(
+        settings.compliance_api,
+        "Training",
+        params={"Name": clean_id},
         token=token,
         collection_fallback="training",
     )
+    if status_code != 200 or not data:
+        status_code, data = await _fetch_from_api(
+            settings.compliance_api,
+            f"Training/{clean_id}",
+            token=token,
+            collection_fallback="training",
+        )
 
+    records: list[dict[str, Any]] = []
     if status_code == 200 and isinstance(data, dict):
-        records = data.get("training_records", data.get("records", [data]))
+        raw = data.get("result", data.get("training_records", data.get("records", [data])))
+        records = [normalize_cpg_record(x) for x in raw] if isinstance(raw, list) else [normalize_cpg_record(raw)]
+    elif status_code == 200 and isinstance(data, list):
+        records = [normalize_cpg_record(x) for x in data]
+
+    if records:
         return {
             "operator_id": clean_id,
             "training_records": records,
             "status": "found",
-            "qualified": any(str(r.get("status", "")).upper() == "ACTIVE" for r in records),
-        }
-    if status_code == 200 and isinstance(data, list):
-        return {
-            "operator_id": clean_id,
-            "training_records": data,
-            "status": "found",
-            "qualified": any(str(r.get("status", "")).upper() == "ACTIVE" for r in data),
+            "qualified": any(str(r.get("status", "")).upper() in {"ACTIVE", "QUALIFIED", "CURRENT", "PASS"} for r in records),
         }
 
     return {
@@ -426,13 +571,13 @@ def get_operator_training_status(
     }
 
 
-def get_equipment_status(
+async def get_equipment_status(
     equipment_id: str,
     permissions: ChatPermissions | None = None,
     token: str | None = None,
 ) -> dict[str, Any]:
     """
-    Retrieve equipment asset details and PM calibration from FACILITY_API.
+    Retrieve equipment asset details and PM calibration from COMPLIANCE_API (Equipment).
     Enforces permission check BEFORE request.
     """
     verify_resource_permission(permissions, "equipment")
@@ -444,9 +589,11 @@ def get_equipment_status(
         try:
             container = _get_business_container("equipment")
             if hasattr(container, "query_items"):
-                items = list(container.query_items(parameters=[{"name": "@eid", "value": clean_id}]))
+                items = container.query_items(parameters=[{"name": "@eid", "value": clean_id}])
+                if inspect.isawaitable(items):
+                    items = await items
                 if items:
-                    eq = items[0]
+                    eq = list(items)[0]
                     return {
                         "equipment": eq,
                         "status": "found",
@@ -462,19 +609,48 @@ def get_equipment_status(
         except Exception:
             pass
 
-    status_code, data = _fetch_from_api(
-        settings.facility_api,
-        f"equipment/{clean_id}",
-        token=token,
-        collection_fallback="equipment",
-    )
+    # Real Compliance API:
+    # 1. If GUID, GET Equipment/{id}
+    is_guid = len(clean_id) == 36 and clean_id.count("-") == 4
+    if is_guid:
+        status_code, data = await _fetch_from_api(
+            settings.compliance_api,
+            f"Equipment/{clean_id}",
+            token=token,
+            collection_fallback="equipment",
+        )
+    else:
+        # 2. Query Equipment by Name
+        status_code, data = await _fetch_from_api(
+            settings.compliance_api,
+            "Equipment",
+            params={"Name": clean_id},
+            token=token,
+            collection_fallback="equipment",
+        )
+        if status_code != 200 or not data:
+            status_code, data = await _fetch_from_api(
+                settings.compliance_api,
+                f"Equipment/{clean_id}",
+                token=token,
+                collection_fallback="equipment",
+            )
 
+    eq: dict[str, Any] | None = None
     if status_code == 200 and isinstance(data, dict):
-        eq = data.get("equipment", data)
+        raw = data.get("result", data.get("equipment", data))
+        if isinstance(raw, list) and raw:
+            eq = normalize_cpg_record(raw[0])
+        elif isinstance(raw, dict):
+            eq = normalize_cpg_record(raw)
+    elif status_code == 200 and isinstance(data, list) and data:
+        eq = normalize_cpg_record(data[0])
+
+    if eq:
         return {
             "equipment": eq,
             "status": "found",
-            "pm_overdue": str(eq.get("pm_status") or eq.get("status") or "").upper() == "OVERDUE",
+            "pm_overdue": str(eq.get("pm_status") or eq.get("status") or "").upper() in {"OVERDUE", "EXPIRED"},
             "record_id": clean_id,
         }
 
@@ -486,13 +662,13 @@ def get_equipment_status(
     }
 
 
-def get_material_lot_trace(
+async def get_material_lot_trace(
     lot_number: str,
     permissions: ChatPermissions | None = None,
     token: str | None = None,
 ) -> dict[str, Any]:
     """
-    Trace a chemical or component lot through batches.
+    Trace a chemical or component lot through batches via PRODUCTION_API.
     Enforces permission check BEFORE request.
     """
     verify_resource_permission(permissions, "material")
@@ -504,9 +680,11 @@ def get_material_lot_trace(
         try:
             container = _get_business_container("materials")
             if hasattr(container, "query_items"):
-                items = list(container.query_items(parameters=[{"name": "@lot", "value": clean_lot}]))
+                items = container.query_items(parameters=[{"name": "@lot", "value": clean_lot}])
+                if inspect.isawaitable(items):
+                    items = await items
                 if items:
-                    return {"material_lot": items[0], "status": "found", "lot_number": clean_lot, "record_id": clean_lot}
+                    return {"material_lot": list(items)[0], "status": "found", "lot_number": clean_lot, "record_id": clean_lot}
                 return {
                     "error": f"Lot record {clean_lot} is unavailable or not found.",
                     "status": "unavailable",
@@ -516,15 +694,34 @@ def get_material_lot_trace(
         except Exception:
             pass
 
-    status_code, data = _fetch_from_api(
-        settings.facility_api,
-        f"materials/{clean_lot}",
+    # Real Production API: ComponentChildInventory & ChemicalChildInventory
+    status_code, data = await _fetch_from_api(
+        settings.production_api,
+        "ComponentChildInventory",
+        params={"Lot_number": clean_lot},
         token=token,
         collection_fallback="materials",
     )
+    if status_code != 200 or not data:
+        status_code, data = await _fetch_from_api(
+            settings.production_api,
+            "ChemicalChildInventory",
+            params={"Lot_number": clean_lot},
+            token=token,
+            collection_fallback="materials",
+        )
 
+    mat: dict[str, Any] | None = None
     if status_code == 200 and isinstance(data, dict):
-        mat = data.get("material", data)
+        raw = data.get("result", data.get("material", data))
+        if isinstance(raw, list) and raw:
+            mat = normalize_cpg_record(raw[0])
+        elif isinstance(raw, dict):
+            mat = normalize_cpg_record(raw)
+    elif status_code == 200 and isinstance(data, list) and data:
+        mat = normalize_cpg_record(data[0])
+
+    if mat:
         return {"material_lot": mat, "status": "found", "lot_number": clean_lot, "record_id": clean_lot}
 
     return {
@@ -535,13 +732,13 @@ def get_material_lot_trace(
     }
 
 
-def get_deviation_by_id(
+async def get_deviation_by_id(
     deviation_id: str,
     permissions: ChatPermissions | None = None,
     token: str | None = None,
 ) -> dict[str, Any]:
     """
-    Retrieve deviation details and linked CAPAs from COMPLIANCE_API.
+    Retrieve deviation details and linked records from COMPLIANCE_API (TaskManagement).
     Enforces permission check BEFORE request.
     """
     verify_resource_permission(permissions, "deviation")
@@ -553,9 +750,11 @@ def get_deviation_by_id(
         try:
             container = _get_business_container("deviations")
             if hasattr(container, "query_items"):
-                items = list(container.query_items(parameters=[{"name": "@did", "value": clean_id}]))
+                items = container.query_items(parameters=[{"name": "@did", "value": clean_id}])
+                if inspect.isawaitable(items):
+                    items = await items
                 if items:
-                    return {"deviation": items[0], "status": "found", "deviation_id": clean_id, "record_id": clean_id}
+                    return {"deviation": list(items)[0], "status": "found", "deviation_id": clean_id, "record_id": clean_id}
                 return {
                     "error": f"Deviation record {clean_id} is unavailable or not found.",
                     "status": "unavailable",
@@ -565,15 +764,44 @@ def get_deviation_by_id(
         except Exception:
             pass
 
-    status_code, data = _fetch_from_api(
-        settings.compliance_api,
-        f"deviations/{clean_id}",
-        token=token,
-        collection_fallback="deviations",
-    )
+    # Real Compliance API:
+    # 1. Query v1/TaskManagement/{clean_id} if GUID
+    is_guid = len(clean_id) == 36 and clean_id.count("-") == 4
+    if is_guid:
+        status_code, data = await _fetch_from_api(
+            settings.compliance_api,
+            f"v1/TaskManagement/{clean_id}",
+            token=token,
+            collection_fallback="deviations",
+        )
+    else:
+        # 2. Query v1/TaskManagement with searchKey / Module_type
+        status_code, data = await _fetch_from_api(
+            settings.compliance_api,
+            "v1/TaskManagement",
+            params={"searchKey": clean_id, "Module_type": "DEV"},
+            token=token,
+            collection_fallback="deviations",
+        )
+        if status_code != 200 or not data:
+            status_code, data = await _fetch_from_api(
+                settings.compliance_api,
+                f"v1/TaskManagement/{clean_id}",
+                token=token,
+                collection_fallback="deviations",
+            )
 
+    dev: dict[str, Any] | None = None
     if status_code == 200 and isinstance(data, dict):
-        dev = data.get("deviation", data)
+        raw = data.get("result", data.get("deviation", data))
+        if isinstance(raw, list) and raw:
+            dev = normalize_cpg_record(raw[0])
+        elif isinstance(raw, dict):
+            dev = normalize_cpg_record(raw)
+    elif status_code == 200 and isinstance(data, list) and data:
+        dev = normalize_cpg_record(data[0])
+
+    if dev:
         return {"deviation": dev, "status": "found", "deviation_id": clean_id, "record_id": clean_id}
 
     return {
@@ -584,7 +812,7 @@ def get_deviation_by_id(
     }
 
 
-def get_environmental_monitoring(
+async def get_environmental_monitoring(
     location_id: str | None = None,
     limit: int = 10,
     permissions: ChatPermissions | None = None,
@@ -595,45 +823,54 @@ def get_environmental_monitoring(
     Enforces permission check BEFORE request.
     """
     verify_resource_permission(permissions, "environmental_monitoring")
-    params: dict[str, Any] = {"limit": min(limit, 50)}
+    params: dict[str, Any] = {"pageSize": min(limit, 50)}
     if location_id:
-        params["location"] = location_id.strip()
+        params["Location_name"] = location_id.strip()
 
     if _is_container_mocked():
         try:
             container = _get_business_container("environmental_monitoring")
             if hasattr(container, "query_items"):
-                items = list(container.query_items())
-                if location_id:
-                    loc = location_id.strip().upper()
-                    items = [r for r in items if str(r.get("location", "")).upper() == loc]
-                return items[:limit]
+                items = container.query_items()
+                if inspect.isawaitable(items):
+                    items = await items
+                if items is not None:
+                    items = list(items)
+                    if location_id:
+                        loc = location_id.strip().upper()
+                        items = [r for r in items if str(r.get("location", "")).upper() == loc or str(r.get("Location_name", "")).upper() == loc]
+                    return items[:limit]
         except Exception:
             pass
 
-    status_code, data = _fetch_from_api(
+    status_code, data = await _fetch_from_api(
         settings.compliance_api,
-        "environmental-monitoring",
+        "EnvironmentalMonitoring",
         params=params,
         token=token,
         collection_fallback="environmental_monitoring",
     )
 
+    records: list[dict[str, Any]] = []
     if status_code == 200 and isinstance(data, list):
-        return data[:limit]
-    if status_code == 200 and isinstance(data, dict):
-        return data.get("records", [])[:limit]
+        records = [normalize_cpg_record(x) for x in data]
+    elif status_code == 200 and isinstance(data, dict):
+        raw = data.get("result", data.get("records", []))
+        if isinstance(raw, list):
+            records = [normalize_cpg_record(x) for x in raw]
+        elif isinstance(raw, dict):
+            records = [normalize_cpg_record(raw)]
 
-    return []
+    return records[:limit]
 
 
-def get_production_dashboard_data(
+async def get_production_dashboard_data(
     user_id: str = "",
     permissions: ChatPermissions | None = None,
     token: str | None = None,
 ) -> dict[str, Any]:
     """
-    Read production KPIs, alerts, batches, and inventory from PRODUCTION_API.
+    Read production KPIs, alerts, batches, and inventory from FACILITY_API (DashboardProduction).
     Enforces permission check BEFORE request.
     """
     verify_resource_permission(permissions, "production")
@@ -645,14 +882,20 @@ def get_production_dashboard_data(
         "lowInventory": [],
     }
 
-    # Fetch live snapshot from Production API if available
-    status_code, data = _fetch_from_api(settings.production_api, "dashboard", token=token)
+    # Fetch live snapshot from Facility User API /api/DashboardProduction
+    status_code, data = await _fetch_from_api(
+        settings.facility_api,
+        "DashboardProduction/GetProductionDetails",
+        token=token,
+    )
     if status_code == 200 and isinstance(data, dict):
-        out.update(data)
-        return out
+        res = data.get("result", data)
+        if isinstance(res, dict):
+            out.update(normalize_cpg_record(res))
+            return out
 
     # Compute from collection items
-    batch_items = _get_business_items("batches")
+    batch_items = await _safe_fetch_items("batches")
     active = [b for b in batch_items if str(b.get("status", "")).upper() in {"IN_PROGRESS", "ACTIVE"}]
     out["kpis"]["activeBatches"] = len(active)
     out["batches"] = [
@@ -660,7 +903,7 @@ def get_production_dashboard_data(
         for b in active[:5]
     ]
 
-    inv_items = _get_business_items("inventory")
+    inv_items = await _safe_fetch_items("inventory")
     low_inv = [i for i in inv_items if float(i.get("available_quantity") or 0) < float(i.get("reorder_point") or 100)]
     out["lowInventory"] = [
         {"name": str(i.get("name", "")), "sku": str(i.get("sku", "")), "available": i.get("available_quantity", 0)}
@@ -670,13 +913,13 @@ def get_production_dashboard_data(
     return out
 
 
-def get_compliance_dashboard_data(
+async def get_compliance_dashboard_data(
     user_id: str = "",
     permissions: ChatPermissions | None = None,
     token: str | None = None,
 ) -> dict[str, Any]:
     """
-    Read compliance OOC details, tasks, and alerts from COMPLIANCE_API.
+    Read compliance OOC details, tasks, and alerts from FACILITY_API (DashboardMonitor).
     Enforces permission check BEFORE request.
     """
     verify_resource_permission(permissions, "compliance")
@@ -698,17 +941,30 @@ def get_compliance_dashboard_data(
         "environmentalAlerts": [],
     }
 
-    status_code, data = _fetch_from_api(settings.compliance_api, "dashboard", token=token)
+    # Fetch live snapshot from Facility User API /api/DashboardMonitor
+    status_code, data = await _fetch_from_api(
+        settings.facility_api,
+        "DashboardMonitor/GetOutOfComplianceDetails/all",
+        token=token,
+    )
+    if status_code != 200:
+        status_code, data = await _fetch_from_api(
+            settings.facility_api,
+            "DashboardMonitor/GetTodayTask",
+            token=token,
+        )
     if status_code == 200 and isinstance(data, dict):
-        out.update(data)
-        return out
+        res = data.get("result", data)
+        if isinstance(res, dict):
+            out.update(normalize_cpg_record(res))
+            return out
 
-    eq_items = _get_business_items("equipment")
+    eq_items = await _safe_fetch_items("equipment")
     overdue_eq = [e for e in eq_items if str(e.get("status", "")).upper() == "OVERDUE" or str(e.get("pm_status", "")).upper() == "OVERDUE"]
     out["ooc"]["equipment"] = [str(e.get("name") or e.get("id")) for e in overdue_eq]
     out["ooc"]["equipmentCount"] = len(overdue_eq)
 
-    tr_items = _get_business_items("training")
+    tr_items = await _safe_fetch_items("training")
     expired_tr = [t for t in tr_items if str(t.get("status", "")).upper() == "EXPIRED"]
     out["ooc"]["trainings"] = [str(t.get("course_name") or t.get("operator_id")) for t in expired_tr]
     out["ooc"]["trainingCount"] = len(expired_tr)
@@ -720,7 +976,7 @@ def get_compliance_dashboard_data(
 # ── PHASE 2: MULTI-ENTITY INVESTIGATION & TRACEABILITY CHAINS ─────────────────
 
 
-def get_related_batches(
+async def get_related_batches(
     entity_type: str,
     entity_id: str,
     permissions: ChatPermissions | None = None,
@@ -744,7 +1000,7 @@ def get_related_batches(
     if not eid:
         return {"error": "entity_id parameter is required.", "status": "missing_parameter"}
 
-    all_batches = _get_business_items("batches")
+    all_batches = await _safe_fetch_items("batches")
     matching_batches: list[dict[str, Any]] = []
 
     for b in all_batches:
@@ -781,7 +1037,7 @@ def get_related_batches(
     }
 
 
-def get_material_lot_genealogy(
+async def get_material_lot_genealogy(
     lot_id: str,
     permissions: ChatPermissions | None = None,
     token: str | None = None,
@@ -797,11 +1053,11 @@ def get_material_lot_genealogy(
         return {"error": "lot_id parameter is required.", "status": "missing_parameter"}
 
     # Check if raw material lot record is marked REJECTED / QUARANTINED
-    mat_res = get_material_lot_trace(clean_lot, permissions=permissions, token=token)
+    mat_res = await get_material_lot_trace(clean_lot, permissions=permissions, token=token)
     mat_item = mat_res.get("material_lot", {})
     mat_defective = str(mat_item.get("quality_status") or mat_item.get("status") or "").upper() in {"REJECTED", "QUARANTINED", "FAILED"}
 
-    all_batches = _get_business_items("batches")
+    all_batches = await _safe_fetch_items("batches")
     batches: list[dict[str, Any]] = []
     finished_drugs: list[str] = []
 
@@ -844,7 +1100,7 @@ def get_material_lot_genealogy(
     }
 
 
-def get_component_lot_genealogy(
+async def get_component_lot_genealogy(
     lot_id: str,
     permissions: ChatPermissions | None = None,
     token: str | None = None,
@@ -859,7 +1115,7 @@ def get_component_lot_genealogy(
     if not clean_lot:
         return {"error": "lot_id parameter is required.", "status": "missing_parameter"}
 
-    all_batches = _get_business_items("batches")
+    all_batches = await _safe_fetch_items("batches")
     batches: list[dict[str, Any]] = []
     finished_drugs: list[str] = []
 
@@ -895,7 +1151,7 @@ def get_component_lot_genealogy(
     }
 
 
-def get_operator_batch_history(
+async def get_operator_batch_history(
     operator_id: str,
     permissions: ChatPermissions | None = None,
     token: str | None = None,
@@ -910,10 +1166,10 @@ def get_operator_batch_history(
     if not clean_op:
         return {"error": "operator_id parameter is required.", "status": "missing_parameter"}
 
-    tr_res = get_operator_training_status(clean_op, permissions=permissions, token=token)
+    tr_res = await get_operator_training_status(clean_op, permissions=permissions, token=token)
     trainings = tr_res.get("training_records", [])
 
-    all_batches = _get_business_items("batches")
+    all_batches = await _safe_fetch_items("batches")
     batches: list[dict[str, Any]] = []
     equipment_used: set[str] = set()
     deviations_linked: list[str] = []
@@ -941,7 +1197,7 @@ def get_operator_batch_history(
     }
 
 
-def get_equipment_batch_history(
+async def get_equipment_batch_history(
     equipment_id: str,
     permissions: ChatPermissions | None = None,
     token: str | None = None,
@@ -956,10 +1212,10 @@ def get_equipment_batch_history(
     if not clean_eq:
         return {"error": "equipment_id parameter is required.", "status": "missing_parameter"}
 
-    eq_res = get_equipment_status(clean_eq, permissions=permissions, token=token)
+    eq_res = await get_equipment_status(clean_eq, permissions=permissions, token=token)
     eq_record = eq_res.get("equipment", {"asset_id": clean_eq, "status": "UNKNOWN"})
 
-    all_batches = _get_business_items("batches")
+    all_batches = await _safe_fetch_items("batches")
     batches: list[dict[str, Any]] = []
     for b in all_batches:
         eqs = [str(e) for e in (b.get("equipment") or [])]
@@ -1003,7 +1259,7 @@ def get_equipment_batch_history(
     }
 
 
-def get_finished_drug_genealogy(
+async def get_finished_drug_genealogy(
     drug_id_or_lot: str,
     permissions: ChatPermissions | None = None,
     token: str | None = None,
@@ -1018,7 +1274,7 @@ def get_finished_drug_genealogy(
     if not clean_id:
         return {"error": "drug_id_or_lot parameter is required.", "status": "missing_parameter"}
 
-    all_batches = _get_business_items("batches")
+    all_batches = await _safe_fetch_items("batches")
     batches: list[dict[str, Any]] = []
     all_materials: set[str] = set()
     all_components: set[str] = set()
@@ -1044,7 +1300,7 @@ def get_finished_drug_genealogy(
     }
 
 
-def get_deviation_impact(
+async def get_deviation_impact(
     deviation_id: str,
     permissions: ChatPermissions | None = None,
     token: str | None = None,
@@ -1058,10 +1314,10 @@ def get_deviation_impact(
     if not clean_id:
         return {"error": "deviation_id parameter is required.", "status": "missing_parameter"}
 
-    dev_res = get_deviation_by_id(clean_id, permissions=permissions, token=token)
+    dev_res = await get_deviation_by_id(clean_id, permissions=permissions, token=token)
     dev_record = dev_res.get("deviation", {"id": clean_id, "status": "RECORD_NOT_FOUND"})
 
-    all_batches = _get_business_items("batches")
+    all_batches = await _safe_fetch_items("batches")
     confirmed_impact: list[dict[str, Any]] = []
     potential_impact: list[dict[str, Any]] = []
 
@@ -1077,7 +1333,7 @@ def get_deviation_impact(
 
     eq_id = dev_record.get("equipment_id")
     if eq_id:
-        shared_batches = _get_business_items("batches") if _is_container_mocked() else all_batches
+        shared_batches = (await _safe_fetch_items("batches")) if _is_container_mocked() else all_batches
         for b in shared_batches:
             eqs = [str(e) for e in (b.get("equipment") or [])]
             devs = [str(d) for d in (b.get("deviations") or [])]
@@ -1099,7 +1355,7 @@ def get_deviation_impact(
     }
 
 
-def investigate_entity(
+async def investigate_entity(
     entity_type: str,
     entity_id: str,
     permissions: ChatPermissions | None = None,
@@ -1113,21 +1369,21 @@ def investigate_entity(
     eid = (entity_id or "").strip()
 
     if etype in {"material", "material_lot", "raw_material", "chemical"}:
-        return get_material_lot_genealogy(lot_id=eid, permissions=permissions, token=token)
+        return await get_material_lot_genealogy(lot_id=eid, permissions=permissions, token=token)
     if etype in {"component", "component_lot", "packaging", "container", "closure"}:
-        return get_component_lot_genealogy(lot_id=eid, permissions=permissions, token=token)
+        return await get_component_lot_genealogy(lot_id=eid, permissions=permissions, token=token)
     if etype in {"operator", "personnel", "training"}:
-        return get_operator_batch_history(operator_id=eid, permissions=permissions, token=token)
+        return await get_operator_batch_history(operator_id=eid, permissions=permissions, token=token)
     if etype in {"equipment", "asset", "machine"}:
-        return get_equipment_batch_history(equipment_id=eid, permissions=permissions, token=token)
+        return await get_equipment_batch_history(equipment_id=eid, permissions=permissions, token=token)
     if etype in {"deviation", "oos", "oot", "capa"}:
-        return get_deviation_impact(deviation_id=eid, permissions=permissions, token=token)
+        return await get_deviation_impact(deviation_id=eid, permissions=permissions, token=token)
     if etype in {"finished_drug", "drug", "finished_product"}:
-        return get_finished_drug_genealogy(drug_id_or_lot=eid, permissions=permissions, token=token)
+        return await get_finished_drug_genealogy(drug_id_or_lot=eid, permissions=permissions, token=token)
     if etype in {"location", "room", "cleanroom"}:
         verify_resource_permission(permissions, "environmental_monitoring")
-        em_records = get_environmental_monitoring(location_id=eid, permissions=permissions, token=token)
-        related = get_related_batches(entity_type="location", entity_id=eid, permissions=permissions, token=token)
+        em_records = await get_environmental_monitoring(location_id=eid, permissions=permissions, token=token)
+        related = await get_related_batches(entity_type="location", entity_id=eid, permissions=permissions, token=token)
         return {
             "entity_type": "location",
             "entity_id": eid,
@@ -1138,7 +1394,7 @@ def investigate_entity(
         }
     if etype in {"product"}:
         verify_resource_permission(permissions, "batch")
-        related = get_related_batches(entity_type="product", entity_id=eid, permissions=permissions, token=token)
+        related = await get_related_batches(entity_type="product", entity_id=eid, permissions=permissions, token=token)
         return {
             "entity_type": "product",
             "entity_id": eid,
@@ -1148,23 +1404,26 @@ def investigate_entity(
         }
 
     # Fallback to generic related batches search
-    return get_related_batches(entity_type=etype, entity_id=eid, permissions=permissions, token=token)
+    return await get_related_batches(entity_type=etype, entity_id=eid, permissions=permissions, token=token)
 
 
 # ── PHASE 3 & 4 WRAPPERS ─────────────────────────────────────────────────────
 
 
-def find_similar_batches(
+async def find_similar_batches(
     batch_id: str,
     top_n: int = 5,
     permissions: ChatPermissions | None = None,
     token: str | None = None,
 ) -> dict[str, Any]:
     from app.services.analytics_service import find_similar_batches as _fsb
-    return _fsb(batch_id=batch_id, top_n=top_n, permissions=permissions)
+    res = _fsb(batch_id=batch_id, top_n=top_n, permissions=permissions)
+    if inspect.isawaitable(res):
+        res = await res
+    return res
 
 
-def calculate_risk_score(
+async def calculate_risk_score(
     batch_id: str | None = None,
     batch_id_or_config: str | dict[str, Any] | None = None,
     proposed_config: dict[str, Any] | None = None,
@@ -1174,10 +1433,13 @@ def calculate_risk_score(
 ) -> dict[str, Any]:
     from app.services.analytics_service import calculate_risk_score as _crs
     target = batch_id or batch_id_or_config or proposed_config or ""
-    return _crs(batch_id_or_config=target, permissions=permissions)
+    res = _crs(batch_id_or_config=target, permissions=permissions)
+    if inspect.isawaitable(res):
+        res = await res
+    return res
 
 
-def detect_trends(
+async def detect_trends(
     product_id: str,
     metric: str = "yield",
     window: str = "90d",
@@ -1185,10 +1447,13 @@ def detect_trends(
     token: str | None = None,
 ) -> dict[str, Any]:
     from app.services.analytics_service import detect_trends as _dt
-    return _dt(product_id=product_id, metric=metric, window=window, permissions=permissions)
+    res = _dt(product_id=product_id, metric=metric, window=window, permissions=permissions)
+    if inspect.isawaitable(res):
+        res = await res
+    return res
 
 
-def recommend_batch_configuration(
+async def recommend_batch_configuration(
     product_id: str,
     target_quantity: float = 1000.0,
     target_date: str | None = None,
@@ -1200,7 +1465,7 @@ def recommend_batch_configuration(
     token: str | None = None,
 ) -> dict[str, Any]:
     from app.services.recommendation_engine import recommend_batch_configuration as _rbc
-    return _rbc(
+    res = _rbc(
         product_id=product_id,
         target_quantity=target_quantity,
         target_date=target_date,
@@ -1210,6 +1475,9 @@ def recommend_batch_configuration(
         user_id=user_id,
         role=role,
     )
+    if inspect.isawaitable(res):
+        res = await res
+    return res
 
 
 # ── TOOL REGISTRY & SAFE LLM FUNCTION DISPATCH ────────────────────────────────
@@ -1302,11 +1570,11 @@ PREDEFINED_TOOL_SCHEMAS = [
         "type": "function",
         "function": {
             "name": "get_material_lot_trace",
-            "description": "Trace a chemical or component lot (e.g. RM-88321) through batches.",
+            "description": "Trace a chemical or component lot through batches.",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "lot_number": {"type": "string", "description": "The lot or chemical code"}
+                    "lot_number": {"type": "string", "description": "The lot number or chemical code"}
                 },
                 "required": ["lot_number"],
             },
@@ -1407,7 +1675,7 @@ PREDEFINED_TOOL_SCHEMAS = [
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "lot_id": {"type": "string", "description": "The material lot number (e.g. RM-88321)"}
+                    "lot_id": {"type": "string", "description": "The material lot number or identifier"}
                 },
                 "required": ["lot_id"],
             },
@@ -1548,7 +1816,7 @@ PREDEFINED_TOOL_SCHEMAS = [
 ]
 
 
-def execute_predefined_tool(
+async def execute_predefined_tool(
     function_name: str,
     arguments: dict[str, Any],
     permissions: ChatPermissions | None = None,
@@ -1575,6 +1843,8 @@ def execute_predefined_tool(
 
     try:
         result = fn(**args)
+        if inspect.isawaitable(result):
+            result = await result
         return {"function": fn_name, "arguments": arguments, "result": result, "status": "success"}
     except PermissionDeniedError as exc:
         return {

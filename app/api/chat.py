@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 from datetime import datetime
+import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
+
+logger = logging.getLogger(__name__)
 
 from app.core.auth import AuthenticatedUser, require_facility_user
 from app.core.config import settings
@@ -25,7 +28,7 @@ from app.services.capabilities import (
 )
 from app.services.dashboard_service import fetch_dashboard_snapshot, format_snapshot_for_prompt
 from app.services.facility_api_service import set_current_token, set_current_user
-from app.services.permissions_service import resolve_permissions
+from app.services.permissions_service import PermissionDeniedError, resolve_permissions
 from app.services.welcome import build_welcome_message
 
 router = APIRouter(
@@ -124,9 +127,34 @@ def _facility_identity(
     facility_user_id: str | None = None,
     facility_user_name: str | None = None,
 ) -> tuple[str, str]:
-    user_id = (facility_user_id or "").strip() or (user.user_id or "").strip()
-    username = (facility_user_name or "").strip() or (user.name or "").strip()
-    return user_id, username
+    """
+    Resolve identity for request execution.
+
+    SECURITY BOUNDARY:
+    Authorization decisions and permission resolution MUST ALWAYS use the verified,
+    token-derived identity (user.user_id).
+    Client-supplied `facility_user_id` MUST NEVER be used for authorization, permission
+    checks, or resource gating to prevent privilege escalation / IDOR spoofing attacks.
+    If `facility_user_id` is supplied and differs from `user.user_id`, we log a security
+    warning and ignore it for authorization decisions.
+
+    `facility_user_name` is only allowed as a display name override for non-auth UI greetings.
+    """
+    token_user_id = (user.user_id or "").strip()
+    client_user_id = (facility_user_id or "").strip()
+
+    if client_user_id and token_user_id and client_user_id != token_user_id:
+        logger.warning(
+            "Security notice: client-supplied facility_user_id '%s' differs from token user_id '%s'. "
+            "Ignoring client-supplied ID for authorization decisions.",
+            client_user_id,
+            token_user_id,
+        )
+
+    # Strictly use verified token identity for authorization/user identity
+    authoritative_user_id = token_user_id
+    display_name = (facility_user_name or "").strip() or (user.name or "").strip()
+    return authoritative_user_id, display_name
 
 
 def _user_key(user: AuthenticatedUser) -> str:
@@ -236,12 +264,22 @@ async def _load_dashboard_context(
         facility_user_id=facility_user_id,
         facility_user_name=facility_user_name,
     )
-    snapshot = await fetch_dashboard_snapshot(
-        token=user.token,
-        user_id=actor_id,
-        username=actor_name,
-        scopes=scopes,
-    )
+    try:
+        snapshot = await fetch_dashboard_snapshot(
+            token=user.token,
+            user_id=user.user_id,
+            username=actor_name,
+            scopes=scopes,
+            permissions=permissions,
+        )
+    except (HTTPException, PermissionDeniedError) as exc:
+        denial = exc.detail if isinstance(exc, HTTPException) else getattr(exc, "message", str(exc))
+        return (
+            denial
+            or denied_note
+            or "Your role cannot access Production or Compliance dashboard data.",
+            "",
+        )
     context = format_snapshot_for_prompt(snapshot)
     if denied_note:
         context = f"{denied_note}\n\n{context}"
@@ -259,9 +297,10 @@ async def dashboard_summary(
         facility_user_id=request.facility_user_id,
         facility_user_name=request.facility_user_name,
     )
-    set_current_user(user_id=actor_id or user.user_id, username=actor_name or user.name)
-    # Resolve authoritative permissions directly from CPG ManageUser API
-    effective_permissions = await resolve_permissions(user.token, user_id=actor_id)
+    # Context identity and downstream permissions MUST strictly use token-derived identity
+    set_current_user(user_id=user.user_id, username=actor_name or user.name)
+    # Resolve authoritative permissions directly from CPG ManageUser API using verified token identity
+    effective_permissions = await resolve_permissions(user.token, user_id=user.user_id)
     message = (request.message or "dashboard summary").strip()
     requested = requested_scopes(message)
     allowed = allowed_scopes(effective_permissions)
@@ -272,7 +311,7 @@ async def dashboard_summary(
     if scopes:
         snapshot = await fetch_dashboard_snapshot(
             token=user.token,
-            user_id=actor_id,
+            user_id=user.user_id,
             username=actor_name,
             scopes=scopes,
             permissions=effective_permissions,
@@ -297,12 +336,13 @@ async def chat(
         facility_user_id=request.facility_user_id,
         facility_user_name=request.facility_user_name or display,
     )
-    set_current_user(user_id=actor_id or user.user_id, username=actor_name or display)
+    # Context identity: use token-derived user_id for security
+    set_current_user(user_id=user.user_id, username=actor_name or display)
 
     # SECURITY BOUNDARY:
     # Resolve authoritative permissions from CPG ManageUser / Permissions API using raw forwarded token.
-    # Never trust client-supplied permissions or unverified token claims for authorization.
-    effective_permissions = await resolve_permissions(user.token, user_id=actor_id)
+    # Never trust client-supplied permissions, facility_user_id, or unverified claims for authorization.
+    effective_permissions = await resolve_permissions(user.token, user_id=user.user_id)
 
     thread_id = (request.thread_id or "").strip() or None
     history: list[dict[str, str]] = []
@@ -322,6 +362,7 @@ async def chat(
     entity_type = ""
     traceability_chain = ""
     risk_config_version = ""
+    data_source = ""
     role = effective_permissions.Dashboard_assign or "User"
 
     try:
@@ -357,6 +398,7 @@ async def chat(
             entity_type = getattr(gen_result, "entity_type", "") or ""
             traceability_chain = getattr(gen_result, "traceability_chain", "") or ""
             risk_config_version = getattr(gen_result, "risk_config_version", "") or ""
+            data_source = getattr(gen_result, "data_source", "") or ""
 
         # Audit log for successful / completed response
         await audit_service.log_audit_entry(
@@ -372,8 +414,32 @@ async def chat(
             entity_type=entity_type,
             traceability_chain=traceability_chain,
             risk_config_version=risk_config_version,
+            data_source=data_source,
         )
 
+    except (HTTPException, PermissionDeniedError) as exc:
+        if isinstance(exc, HTTPException) and exc.status_code != status.HTTP_403_FORBIDDEN:
+            raise
+        denial_text = exc.detail if isinstance(exc, HTTPException) else getattr(exc, "message", str(exc))
+        if not denial_text or not str(denial_text).strip():
+            denial_text = "Your role cannot access this resource. Ask an admin for permission."
+        response_text = str(denial_text)
+        permission_denied = True
+        denial_reason = response_text
+        await audit_service.log_audit_entry(
+            user_id=user_id,
+            role=str(role),
+            raw_query=request.message,
+            functions_called=functions_called,
+            retrieved_record_ids=record_ids,
+            model_version=settings.ai_model,
+            final_response=response_text,
+            permission_denied=permission_denied,
+            denial_reason=denial_reason,
+            entity_type=entity_type,
+            traceability_chain=traceability_chain,
+            risk_config_version=risk_config_version,
+        )
     except (AiAuthError, AiConfigError) as exc:
         await audit_service.log_audit_entry(
             user_id=user_id,

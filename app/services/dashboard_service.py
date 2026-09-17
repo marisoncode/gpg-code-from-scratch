@@ -6,6 +6,7 @@ Maintains existing function signatures for seamless integration with app/api/cha
 
 from __future__ import annotations
 
+import inspect
 import json
 from datetime import datetime, timezone
 from typing import Any
@@ -35,7 +36,10 @@ async def fetch_production(
 ) -> dict[str, Any]:
     """Fetch production snapshot from facility_api_service."""
     try:
-        return get_production_dashboard_data(user_id=user_id, permissions=permissions, token=token)
+        res = get_production_dashboard_data(user_id=user_id, permissions=permissions, token=token)
+        if inspect.isawaitable(res):
+            res = await res
+        return res
     except PermissionDeniedError as exc:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=exc.message)
     except Exception as exc:
@@ -53,7 +57,10 @@ async def fetch_compliance(
 ) -> dict[str, Any]:
     """Fetch compliance snapshot from facility_api_service."""
     try:
-        return get_compliance_dashboard_data(user_id=user_id, permissions=permissions, token=token)
+        res = get_compliance_dashboard_data(user_id=user_id, permissions=permissions, token=token)
+        if inspect.isawaitable(res):
+            res = await res
+        return res
     except PermissionDeniedError as exc:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=exc.message)
     except Exception as exc:
