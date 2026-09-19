@@ -1,0 +1,1503 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/AuditTrail/{kind}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "AuditTrail"
+    ],
+    "parameters": [
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "pageSize",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "sorting",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "kind",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "id",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/AuditTrail/ActivityLog/{refenceKind}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "AuditTrail"
+    ],
+    "parameters": [
+      {
+        "name": "refenceKind",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "refenceId",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/AuditTrail/ChildActivityLog/{refenceKind}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "AuditTrail"
+    ],
+    "parameters": [
+      {
+        "name": "refenceKind",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "refenceId",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/Customer",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Customer"
+    ],
+    "parameters": [
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "pageSize",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "sorting",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "sortproperty",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "Name_of_facility",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Email",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Country",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Customer_type",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Payment",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/Customer",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Customer"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/Customer/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Customer"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/Customer/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Customer"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/Customer/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Customer"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/Customer/GetQBCustomerList",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Customer"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/Customer/GetQBResultByQuery",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Customer"
+    ],
+    "parameters": [
+      {
+        "name": "query",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/Customer/CreateQBService",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Customer"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/EasypostWebhook/{tenentId}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "EasypostWebhook"
+    ],
+    "parameters": [
+      {
+        "name": "tenentId",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/ExportExcel",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ExportExcel"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/ExternalOrder/Products",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ExternalApi"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/ExternalOrder/TrackOrder/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ExternalApi"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/ExternalOrder/Create",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ExternalApi"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/ExternalOrder/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ExternalApi"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/ExternalOrder/ConfirmOrder/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ExternalApi"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/ExternalOrder/CancelOrder/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ExternalApi"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/ExternalOrder/DispenseInventory/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ExternalApi"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/ExternalOrder/GetOrderStatus",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ExternalApi"
+    ],
+    "parameters": [
+      {
+        "name": "orderId",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "orderNo",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "identficationCode",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/ExternalOrder/GetBatchesByCompoundId_CPG/{compoundIdCpg}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ExternalApi"
+    ],
+    "parameters": [
+      {
+        "name": "compoundIdCpg",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/ExternalOrder/GetBatchByBatchId/{value}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ExternalApi"
+    ],
+    "parameters": [
+      {
+        "name": "value",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/ExternalOrder/UpdateBatchDispenseInformation",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ExternalApi"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/ExternalOrder/AddPrescription/{batchId}/{prescriptionId}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ExternalApi"
+    ],
+    "parameters": [
+      {
+        "name": "batchId",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "prescriptionId",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/ExternalOrder/CancelPrescription/{batchId}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ExternalApi"
+    ],
+    "parameters": [
+      {
+        "name": "batchId",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/ExternalOrder/ApiKey/{type}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ExternalApi"
+    ],
+    "parameters": [
+      {
+        "name": "type",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "tenentId",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/ExternalOrder/GenerateClientId/{tenentId}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ExternalApi"
+    ],
+    "parameters": [
+      {
+        "name": "tenentId",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/ExternalOrder/get/CompoundDrug",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ExternalApi"
+    ],
+    "parameters": [
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "pageSize",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "Master_name",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "sorting",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/ExternalOrder/get/{sku}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ExternalApi"
+    ],
+    "parameters": [
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "pageSize",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "sorting",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "Sku",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "LotNumber",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/Order/Status/{statusType}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Order"
+    ],
+    "parameters": [
+      {
+        "name": "statusType",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "pageSize",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "sorting",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "sortproperty",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "Order_date",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Requested_date",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Order_no",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Customer_name",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Product_name",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Identification_code",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Status",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Order_type",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Payment",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/Order/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Order"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "customerId",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/Order/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Order"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/Order/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Order"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/Order",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Order"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/Order/ManageProduct/{type}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Order"
+    ],
+    "parameters": [
+      {
+        "name": "type",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "id",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/Order/ConfirmOrder",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Order"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/Order/RevertFinalProduct/{finalProductId}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Order"
+    ],
+    "parameters": [
+      {
+        "name": "finalProductId",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/Order/CancelOrder",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Order"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/Order/RefundOrder",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Order"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/Order/{id}/GenerateShipment",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Order"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/Order/{id}/OrderConfirmed",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Order"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/Order/GenerateInvoice",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Order"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/Order/GeneratePackingSlip",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Order"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/Order/GeneratePackage/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Order"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/Order/BuyOrder/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Order"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/Order/CreateInvoice",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Order"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/Order/GetPdfInvoice/{invoiceId}/{orderId}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Order"
+    ],
+    "parameters": [
+      {
+        "name": "invoiceId",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "orderId",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/Order/SendInvoice/{invoiceId}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Order"
+    ],
+    "parameters": [
+      {
+        "name": "invoiceId",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "emailId",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/WebJob",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "WebJob"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/WebJob/ManualUpdate/{tenantId}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "WebJob"
+    ],
+    "parameters": [
+      {
+        "name": "tenantId",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  }
+]

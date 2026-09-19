@@ -1,0 +1,2984 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/ApplicationSettings",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ApplicationSettings"
+    ],
+    "parameters": [
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "pageSize",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "sorting",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "Name",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/ApplicationSettings",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ApplicationSettings"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/ApplicationSettings/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ApplicationSettings"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/ApplicationSettings/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ApplicationSettings"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/ApplicationSettings/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ApplicationSettings"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/ApplicationSettings/Easypost/{key}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ApplicationSettings"
+    ],
+    "parameters": [
+      {
+        "name": "key",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/ApplicationSettings/Stripe/{key}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ApplicationSettings"
+    ],
+    "parameters": [
+      {
+        "name": "key",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/ApplicationSettings/ConnectQuickBook",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ApplicationSettings"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/ApplicationSettings/GetAuthorizationUrl",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ApplicationSettings"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/ApplicationSettings/GetAuthToken",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ApplicationSettings"
+    ],
+    "parameters": [
+      {
+        "name": "releamId",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "code",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/ApplicationSettings/ApiCall",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ApplicationSettings"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/ApplicationSettings/GetClientDetails/{tenentId}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ApplicationSettings"
+    ],
+    "parameters": [
+      {
+        "name": "tenentId",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/CompanySettings/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "CompanySettings"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/CompanySettings/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "CompanySettings"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/CompanySettings/LabelSize",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "CompanySettings"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/CompanySettings/FieldValues",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "CompanySettings"
+    ],
+    "parameters": [
+      {
+        "name": "value",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "fieldName",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/CompanySettings/AddSupplierFile/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "CompanySettings"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/CompanySettings/GetSupplierFile",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "CompanySettings"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/CreateJiraIssue",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "CreateJiraIssue"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/CreateJiraIssue",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "CreateJiraIssue"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/DashboardMonitor",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "DashboardMonitor"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/DashboardMonitor/GetTodayProduction",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "DashboardMonitor"
+    ],
+    "parameters": [
+      {
+        "name": "currentDate",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "startDate",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "endDate",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/DashboardMonitor/GetBatchInprocess",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "DashboardMonitor"
+    ],
+    "parameters": [
+      {
+        "name": "startDate",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "endDate",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/DashboardMonitor/GetTodayTask",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "DashboardMonitor"
+    ],
+    "parameters": [
+      {
+        "name": "startDate",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "endDate",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/DashboardMonitor/GetFutureTask",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "DashboardMonitor"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/DashboardMonitor/GetOutOfComplianceDetails/{kind}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "DashboardMonitor"
+    ],
+    "parameters": [
+      {
+        "name": "kind",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "startDate",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "endDate",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/DashboardProduction",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "DashboardProduction"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/DashboardProduction/BatchByLocation",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "DashboardProduction"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/DashboardProduction/GetProductionDashboardAlert",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "DashboardProduction"
+    ],
+    "parameters": [
+      {
+        "name": "startDate",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "endDate",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "userId",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/DashboardProduction/GetProductionDetails",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "DashboardProduction"
+    ],
+    "parameters": [
+      {
+        "name": "startDate",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "endDate",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/DashboardProduction/GetTodaysBatch",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "DashboardProduction"
+    ],
+    "parameters": [
+      {
+        "name": "startDate",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "endDate",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/DashboardProduction/GetOperatorList",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "DashboardProduction"
+    ],
+    "parameters": [
+      {
+        "name": "startDate",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "endDate",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/DashboardProduction/GetNotifications/{notificationType}/{userId}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "DashboardProduction"
+    ],
+    "parameters": [
+      {
+        "name": "notificationType",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "userId",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/DashboardSales",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "DashboardSales"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/DashboardSales",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "DashboardSales"
+    ],
+    "parameters": [
+      {
+        "name": "todayDate",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "startDate",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "endDate",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/DashboardSales/GetSalesComparison",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "DashboardSales"
+    ],
+    "parameters": [
+      {
+        "name": "currentYear",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "previousYear",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/GenerateLabelBarcodeScan/GenerateLabel",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "GenerateLabelBarcodeScan"
+    ],
+    "parameters": [
+      {
+        "name": "batchCaseUnitId",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/GenerateLabelBarcodeScan/ScanBarcode/{input}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "GenerateLabelBarcodeScan"
+    ],
+    "parameters": [
+      {
+        "name": "input",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/GenerateLabelBarcodeScan/Warmup",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "GenerateLabelBarcodeScan"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/LoginFacility",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "LoginFacility"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/LoginFacility/ResetPassword",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "LoginFacility"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/LoginFacility/ForgetPassword",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "LoginFacility"
+    ],
+    "parameters": [
+      {
+        "name": "username",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/LoginFacility/ChangePassword",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "LoginFacility"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/LoginFacility/ForceLogin",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "LoginFacility"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/LoginFacility/Logout",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "LoginFacility"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/LoginView/GetLoginView",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "LoginView"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/ManageUser",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ManageUser"
+    ],
+    "parameters": [
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "pageSize",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "sorting",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "User_id",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "First_name",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Last_name",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "E_mail",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Status",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/ManageUser",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ManageUser"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/ManageUser/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ManageUser"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/ManageUser/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ManageUser"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/ManageUser/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ManageUser"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/ManageUser/SeceretCode/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ManageUser"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/ManageUser/VerifyCode/{secretCode},{type},{moduleId}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ManageUser"
+    ],
+    "parameters": [
+      {
+        "name": "secretCode",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "type",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "moduleId",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/ManageUser/GetBatches",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ManageUser"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/ManageUser/RemoveUserInBatch/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ManageUser"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/ManageUser/GetUserForReplaceBatch/{batchId}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ManageUser"
+    ],
+    "parameters": [
+      {
+        "name": "batchId",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/ManageUser/ReplaceUserInBatch",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ManageUser"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/Options/Customer/{kind}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Options"
+    ],
+    "parameters": [
+      {
+        "name": "kind",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "id",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "pageSize",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "sorting",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "Order_no",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Order_date",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Requested_date",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Status",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Name",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/Options/MasterFormulation/{kind}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Options"
+    ],
+    "parameters": [
+      {
+        "name": "kind",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "id",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "pageSize",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "sorting",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "Order_no",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Order_date",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Requested_date",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Status",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/Options/Facility/{kind}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Options"
+    ],
+    "parameters": [
+      {
+        "name": "kind",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "id",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "pageSize",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "sorting",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "Name",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Status",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/Options/Training/{kind}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Options"
+    ],
+    "parameters": [
+      {
+        "name": "kind",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "id",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "pageSize",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "sorting",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "Name",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Status",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "TrainingClassification",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/Options/User/{kind}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Options"
+    ],
+    "parameters": [
+      {
+        "name": "kind",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "id",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "pageSize",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "sorting",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "Name",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Status",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "TrainingClassification",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/Options/{kind}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Options"
+    ],
+    "parameters": [
+      {
+        "name": "kind",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "pageSize",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "sorting",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "Name",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/Report",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Report"
+    ],
+    "parameters": [
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "pageSize",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "sorting",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "lotNumber",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/Report/CSInventory",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Report"
+    ],
+    "parameters": [
+      {
+        "name": "csType",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/Report/MFRByInventory/{type}/{inventoryId}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Report"
+    ],
+    "parameters": [
+      {
+        "name": "inventoryId",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "type",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/Report/Batch",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Report"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/Report/MFR",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Report"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/Report/Order/{orderType}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Report"
+    ],
+    "parameters": [
+      {
+        "name": "orderType",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/Report/Order/{orderType}/{lotNumber}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Report"
+    ],
+    "parameters": [
+      {
+        "name": "orderType",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "lotNumber",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/Report/Inventory",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Report"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/Report/Inventory/{kind}/{lotNumber}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Report"
+    ],
+    "parameters": [
+      {
+        "name": "kind",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "lotNumber",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/Report/Customer",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Report"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/Report/Customer/WithAssigned/{type}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Report"
+    ],
+    "parameters": [
+      {
+        "name": "type",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/Report/Sales",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Report"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/Report/Sales/{type}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Report"
+    ],
+    "parameters": [
+      {
+        "name": "type",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/Report/FinalProduct/{type}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Report"
+    ],
+    "parameters": [
+      {
+        "name": "type",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/Report/InventoryReport/{type}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Report"
+    ],
+    "parameters": [
+      {
+        "name": "type",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/Report/Recall/{type}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Report"
+    ],
+    "parameters": [
+      {
+        "name": "type",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/Report/Monitoring/{reportType}/{module}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Report"
+    ],
+    "parameters": [
+      {
+        "name": "reportType",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "module",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/Report/Status/{module}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Report"
+    ],
+    "parameters": [
+      {
+        "name": "module",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/Report/Equipment",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Report"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/Report/Facility",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Report"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/Report/EMReport",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Report"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/Report/UserReport/{module}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Report"
+    ],
+    "parameters": [
+      {
+        "name": "module",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/Report/Option/{module}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Report"
+    ],
+    "parameters": [
+      {
+        "name": "module",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/Report/AutoCompleteOptions/{module}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Report"
+    ],
+    "parameters": [
+      {
+        "name": "key",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "value",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "kind",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "module",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/Report/GenerateReport/{reportType}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Report"
+    ],
+    "parameters": [
+      {
+        "name": "reportType",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/Report/GetFacilityOptions/{kind}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Report"
+    ],
+    "parameters": [
+      {
+        "name": "kind",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "id",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/UserProfile",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "UserProfile"
+    ],
+    "parameters": [
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "pageSize",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "sorting",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "sortProperty",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "Name",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Description",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/UserProfile",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "UserProfile"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/UserProfile/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "UserProfile"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/UserProfile/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "UserProfile"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/UserProfile/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "UserProfile"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/UserRole",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "UserRole"
+    ],
+    "parameters": [
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "pageSize",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "sorting",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "Role_name",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Reports_to",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Created_by",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Updated_by",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/UserRole",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "UserRole"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/UserRole/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "UserRole"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/UserRole/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "UserRole"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/UserRole/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "UserRole"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/UserRole/Role/{Role_id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "UserRole"
+    ],
+    "parameters": [
+      {
+        "name": "Role_id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/UserRole/AssignUserRole",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "UserRole"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  }
+]

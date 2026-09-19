@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-[#060810] text-slate-100 antialiased">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CPG AI - Facility Intelligence Copilot</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Marked for Markdown Rendering (with offline graceful fallback) -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              400: '#818cf8',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            },
+            cpg: {
+              teal: '#0d9488',
+              emerald: '#10b981',
+              amber: '#f59e0b',
+              rose: '#f43f5e',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Complete scrollbar elimination - clean Claude / ChatGPT app experience */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+    }
+
+    *::-webkit-scrollbar {
+      width: 0px !important;
+      height: 0px !important;
+      display: none !important;
+    }
+
+    html, body {
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+      overflow: hidden;
+      height: 100%;
+      width: 100%;
+    }
+
+    #sidebar, #threads-container, #messages-container, textarea {
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+    }
+    #sidebar::-webkit-scrollbar,
+    #threads-container::-webkit-scrollbar,
+    #messages-container::-webkit-scrollbar,
+    textarea::-webkit-scrollbar {
+      display: none !important;
+      width: 0px !important;
+      height: 0px !important;
+    }
+
+    /* Markdown Styling inside bubbles - Enterprise GMP Theme */
+    .prose-cpg h1, .prose-cpg h2, .prose-cpg h3, .prose-cpg h4 { font-weight: 700; margin-top: 0.9em; margin-bottom: 0.4em; color: #f8fafc; }
+    .prose-cpg h1 { font-size: 1.3rem; border-bottom: 1px solid rgba(51, 65, 85, 0.5); padding-bottom: 0.3em; color: #38bdf8; }
+    .prose-cpg h2 { font-size: 1.15rem; color: #818cf8; }
+    .prose-cpg h3 { font-size: 1.05rem; color: #2dd4bf; }
+    .prose-cpg h4 { font-size: 0.95rem; color: #cbd5e1; }
+    .prose-cpg p { margin-bottom: 0.7em; line-height: 1.65; color: #e2e8f0; }
+    .prose-cpg ul, .prose-cpg ol { padding-left: 1.5em; margin-bottom: 0.7em; }
+    .prose-cpg ul { list-style-type: disc; }
+    .prose-cpg ol { list-style-type: decimal; }
+    .prose-cpg li { margin-bottom: 0.3em; line-height: 1.5; color: #cbd5e1; }
+    .prose-cpg table { width: 100%; border-collapse: separate; border-spacing: 0; margin: 1em 0; font-size: 0.88rem; border-radius: 12px; overflow: hidden; border: 1px solid #334155; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); }
+    .prose-cpg th, .prose-cpg td { border-bottom: 1px solid #334155; border-right: 1px solid rgba(51, 65, 85, 0.5); padding: 9px 14px; text-align: left; }
+    .prose-cpg th { background: linear-gradient(180deg, #1e293b 0%, #151e2e 100%); color: #38bdf8; font-weight: 700; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    .prose-cpg tr:last-child td { border-bottom: none; }
+    .prose-cpg td:last-child, .prose-cpg th:last-child { border-right: none; }
+    .prose-cpg tr:nth-child(even) { background-color: rgba(30, 41, 59, 0.35); }
+    .prose-cpg tr:hover { background-color: rgba(56, 189, 248, 0.05); }
+    .prose-cpg code { background: rgba(30, 41, 59, 0.8); color: #a5b4fc; padding: 2px 6px; border-radius: 6px; font-size: 0.85em; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; border: 1px solid rgba(99, 102, 241, 0.2); }
+    .prose-cpg pre { background: #090d16; padding: 12px; border-radius: 10px; overflow-x: auto; margin: 0.8em 0; border: 1px solid #334155; }
+    .prose-cpg pre code { background: transparent; padding: 0; border: none; }
+    .prose-cpg blockquote { border-left: 3px solid #0d9488; padding-left: 14px; margin: 0.8em 0; color: #94a3b8; font-style: italic; background: rgba(13, 148, 136, 0.05); padding-top: 4px; padding-bottom: 4px; border-radius: 0 8px 8px 0; }
+
+    /* Pulsing dots */
+    .typing-dot { animation: typing 1.4s infinite ease-in-out both; }
+    .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+    .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+    @keyframes typing {
+      0%, 80%, 100% { transform: scale(0); }
+      40% { transform: scale(1); }
+    }
+  </style>
+</head>
+<body class="h-screen w-screen overflow-hidden flex bg-[#060810] text-slate-100">
+
+  <!-- LEFT SIDEBAR: CHAT HISTORY (Full-height like Claude / ChatGPT) -->
+  <aside id="sidebar" class="w-64 md:w-72 h-screen overflow-hidden flex flex-col bg-[#0b0f19] border-r border-slate-800/80 shrink-0 select-none z-20 transition-all duration-200">
+    
+    <!-- SIDEBAR HEADER: LOGO & NEW CHAT -->
+    <div class="p-3.5 border-b border-slate-800/70 space-y-3 shrink-0">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 to-teal-400 flex items-center justify-center shadow-md shadow-indigo-500/20">
+            <i data-lucide="sparkles" class="w-4 h-4 text-white"></i>
+          </div>
+          <div>
+            <div class="flex items-center space-x-1.5">
+              <span class="font-bold text-sm tracking-wide text-white">CPG AI</span>
+              <span class="text-[9px] px-1.5 py-0.2 uppercase font-semibold tracking-wider bg-teal-500/10 text-teal-400 border border-teal-500/20 rounded-full">GMP</span>
+            </div>
+            <p class="text-[10px] text-slate-400 leading-none">Copilot v1.0</p>
+          </div>
+        </div>
+
+        <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-slate-200 p-1">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- NEW CHAT BUTTON -->
+      <button onclick="startNewThread()" class="w-full flex items-center justify-between py-2 px-3 rounded-xl bg-slate-800/60 hover:bg-indigo-600/20 text-slate-200 hover:text-indigo-300 border border-slate-700/60 hover:border-indigo-500/40 font-medium text-xs transition duration-150 shadow-sm group">
+        <div class="flex items-center space-x-2">
+          <i data-lucide="plus" class="w-4 h-4 text-indigo-400 group-hover:scale-110 transition"></i>
+          <span>New chat</span>
+        </div>
+        <span class="text-[10px] text-slate-500 font-mono">⌘K</span>
+      </button>
+    </div>
+
+    <!-- RECENT CONVERSATIONS TITLE -->
+    <div class="px-3 pt-3 pb-1 flex items-center justify-between text-[11px] font-semibold text-slate-400 uppercase tracking-wider shrink-0">
+      <span>Recent Chats</span>
+      <button onclick="refreshThreads()" title="Refresh" class="text-slate-400 hover:text-slate-200 transition"><i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i></button>
+    </div>
+
+    <!-- CONVERSATION LIST (Clean, zero scrollbars) -->
+    <div id="threads-container" class="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar px-2 space-y-0.5 py-1">
+      <!-- Dynamically injected threads -->
+    </div>
+
+    <!-- USER PROFILE CARD AT BOTTOM OF SIDEBAR -->
+    <div class="p-3 border-t border-slate-800/80 bg-[#090d16] flex items-center justify-between">
+      <div class="flex items-center space-x-2.5 truncate flex-1 min-w-0">
+        <div id="sidebar-avatar" class="w-7 h-7 rounded-full bg-gradient-to-tr from-indigo-600 to-teal-400 flex items-center justify-center text-white text-[11px] font-bold shrink-0 shadow-sm">
+          ?
+        </div>
+        <div class="truncate flex-1 min-w-0">
+          <div id="sidebar-user-name" class="text-xs font-semibold text-slate-200 truncate leading-tight">Guest User</div>
+          <div id="sidebar-user-subtitle" class="text-[10px] text-slate-400 truncate leading-tight">Click settings to auth</div>
+        </div>
+      </div>
+
+      <button onclick="toggleConfigModal()" title="Settings & Auth" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition shrink-0 ml-1">
+        <i data-lucide="settings" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </aside>
+
+  <!-- RIGHT: MAIN CHAT CANVAS -->
+  <main class="flex-1 flex flex-col h-screen overflow-hidden bg-[#060810] relative">
+    
+    <!-- TOP SLENDER APP HEADER -->
+    <header class="h-12 border-b border-slate-800/50 px-4 md:px-6 flex items-center justify-between shrink-0 bg-[#060810]/90 backdrop-blur-md z-10">
+      <div class="flex items-center space-x-2">
+        <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-slate-200 p-1 mr-1">
+          <i data-lucide="menu" class="w-4 h-4"></i>
+        </button>
+
+        <!-- MODEL BADGE SELECTOR -->
+        <div class="flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-xs font-medium text-slate-300">
+          <span class="w-1.5 h-1.5 rounded-full bg-teal-400"></span>
+          <span class="font-semibold text-slate-200">CPG AI Copilot</span>
+          <span class="text-slate-500 text-[10px]">v1.0</span>
+        </div>
+      </div>
+
+      <!-- CONNECTION STATUS & SETTINGS BUTTON -->
+      <div class="flex items-center space-x-2.5">
+        <div id="connection-badge" class="flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-900 border border-slate-800 text-slate-300">
+          <span id="connection-dot" class="w-2 h-2 rounded-full bg-slate-500"></span>
+          <span id="connection-text" class="text-[11px]">Connecting...</span>
+        </div>
+
+        <button onclick="toggleConfigModal()" class="flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 transition border border-slate-700/60 shadow-sm">
+          <i data-lucide="sliders" class="w-3.5 h-3.5"></i>
+          <span>Settings</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- MESSAGE STREAM CONTAINER (Centered, smooth vertical scroll only) -->
+    <div id="messages-container" class="flex-1 overflow-y-auto px-4 md:px-6 py-6 space-y-6 max-w-3xl w-full mx-auto">
+      <!-- Injected dynamically -->
+    </div>
+
+    <!-- BOTTOM FLOATING INPUT BAR (Claude / ChatGPT style) -->
+    <div class="shrink-0 w-full max-w-3xl mx-auto px-4 pb-4 pt-2">
+      
+      <!-- FLOATING INPUT CAPSULE -->
+      <div class="relative bg-[#101524] border border-slate-800 focus-within:border-indigo-500/80 rounded-2xl p-2 shadow-2xl transition duration-150">
+        <textarea
+          id="chat-input"
+          rows="1"
+          class="w-full bg-transparent border-0 text-slate-100 placeholder-slate-500 text-sm focus:outline-none resize-none max-h-36 px-2.5 py-1 leading-relaxed no-scrollbar"
+          placeholder="Ask CPG AI about batches, chemicals, equipment PM, deviations, or SOPs..."
+          onkeydown="handleKeyDown(event)"
+          oninput="autoResize(this)"
+        ></textarea>
+
+        <div class="flex items-center justify-between pt-1 px-1">
+          <div class="flex items-center space-x-2 text-[11px] text-slate-500">
+            <span>21 CFR Part 11 Verified</span>
+          </div>
+
+          <button
+            id="send-btn"
+            onclick="sendMessage()"
+            class="p-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white font-semibold transition shrink-0 shadow-md shadow-indigo-600/30"
+          >
+            <i data-lucide="arrow-up" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <p class="text-[10px] text-slate-400 text-center mt-2">
+        CPG AI enforces 21 CFR Part 11 audit trails • Read-only GMP compliance boundary
+      </p>
+    </div>
+
+  </main>
+
+  <!-- SETTINGS MODAL DIALOG (Sleek Overlay - No Layout Shift) -->
+  <div id="config-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-[#0e1424] border border-slate-800 rounded-2xl max-w-lg w-full p-5 shadow-2xl space-y-4">
+      
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div class="flex items-center space-x-2">
+          <i data-lucide="sliders" class="w-4 h-4 text-indigo-400"></i>
+          <h3 class="font-bold text-sm text-white">API & Authentication Settings</h3>
+        </div>
+        <button onclick="toggleConfigModal()" class="text-slate-400 hover:text-white p-1 rounded-lg">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Backend Base URL</label>
+          <input id="api-base-url" type="text" value="http://localhost:8000" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 font-mono">
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block font-semibold text-slate-300">CPG Bearer Token (JWT)</label>
+            <span class="text-[10px] text-slate-500">From CPG Facility Login</span>
+          </div>
+          <div class="relative">
+            <input id="api-jwt-token" type="password" oninput="updateUserDisplay(this.value)" class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-3 pr-16 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 font-mono" placeholder="Paste your CPG JWT Bearer token here...">
+            <button onclick="toggleTokenVisibility()" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 text-xs px-2 py-0.5 rounded">
+              <span id="token-toggle-text">Show</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- LIVE DECODED IDENTITY CARD -->
+        <div class="p-3 bg-slate-900/90 border border-slate-800 rounded-xl space-y-1.5">
+          <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Token Claims</div>
+          <div class="flex justify-between">
+            <span class="text-slate-400">Decoded Name:</span>
+            <strong id="current-user-display" class="text-teal-300 font-semibold">Not Authenticated</strong>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-400">User / Subject ID:</span>
+            <strong id="current-id-display" class="text-slate-300 font-mono">-</strong>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-400">Role Lens:</span>
+            <strong id="current-role-display" class="text-indigo-400">All</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end space-x-2 pt-2 border-t border-slate-800">
+        <button onclick="toggleConfigModal()" class="px-3.5 py-1.5 rounded-lg text-slate-400 hover:text-white text-xs font-semibold">
+          Cancel
+        </button>
+        <button onclick="saveAndTestConfig()" class="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs shadow-md transition">
+          Apply & Save
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // Inline SVG Icon Library (Zero-CDN, offline-safe)
+    const ICONS = {
+      'sparkles': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>',
+      'plus': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full"><path d="M5 12h14"/><path d="M12 5v14"/></svg>',
+      'rotate-cw': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>',
+      'settings': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>',
+      'sliders': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full"><line x1="4" x2="4" y1="21" y2="14"/><line x1="4" x2="4" y1="10" y2="3"/><line x1="12" x2="12" y1="21" y2="12"/><line x1="12" x2="12" y1="8" y2="3"/><line x1="20" x2="20" y1="21" y2="16"/><line x1="20" x2="20" y1="12" y2="3"/><line x1="1" x2="7" y1="14" y2="14"/><line x1="9" x2="15" y1="8" y2="8"/><line x1="17" x2="23" y1="16" y2="16"/></svg>',
+      'x': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>',
+      'menu': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>',
+      'arrow-up': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>',
+      'cpu': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full"><rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/></svg>',
+      'activity': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',
+      'message-square': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+      'trash-2': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>',
+      'bot': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>',
+      'user': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'
+    };
+
+    function renderIcons(root = document) {
+      root.querySelectorAll('i[data-lucide]').forEach(el => {
+        const name = el.getAttribute('data-lucide');
+        if (ICONS[name]) {
+          const span = document.createElement('span');
+          span.className = 'inline-flex items-center justify-center ' + (el.className || '');
+          span.innerHTML = ICONS[name];
+          el.replaceWith(span);
+        }
+      });
+    }
+
+    // Lucide stub for backward/cross-compatibility
+    window.lucide = { createIcons: renderIcons };
+
+    // Markdown parser with safe offline fallback and GMP status badge enhancements
+    function renderMarkdown(content) {
+      let html = '';
+      if (window.marked && typeof marked.parse === 'function') {
+        try {
+          html = marked.parse(content);
+        } catch (e) {
+          console.warn("Marked parse error:", e);
+        }
+      }
+      if (!html) {
+        const safe = escapeHtml(content || '');
+        html = safe
+          .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
+          .replace(/`([^`]+)`/g, '<code>$1</code>')
+          .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+          .replace(/\n/g, '<br>');
+      }
+
+      // Elevate common GMP status tags with glowing badges
+      html = html.replace(/<code>\s*(Production|Active|In Progress)\s*<\/code>/gi,
+        '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-teal-950/90 text-teal-300 border border-teal-600/60 shadow-sm"><span class="w-1.5 h-1.5 rounded-full bg-teal-400 mr-1.5 animate-pulse"></span>$1</span>'
+      );
+      html = html.replace(/<code>\s*(Released|Approved|Passed|Success)\s*<\/code>/gi,
+        '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-950/90 text-emerald-300 border border-emerald-600/60 shadow-sm"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5"></span>$1</span>'
+      );
+      html = html.replace(/<code>\s*(Quarantine|Pending|Draft|Advisory)\s*<\/code>/gi,
+        '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-950/90 text-amber-300 border border-amber-600/60 shadow-sm"><span class="w-1.5 h-1.5 rounded-full bg-amber-400 mr-1.5"></span>$1</span>'
+      );
+      html = html.replace(/<code>\s*(Deviation|Rejected|Failed|Overdue|OOS|OOT|High Risk)\s*<\/code>/gi,
+        '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-rose-950/90 text-rose-300 border border-rose-600/60 shadow-sm"><span class="w-1.5 h-1.5 rounded-full bg-rose-400 mr-1.5"></span>$1</span>'
+      );
+
+      return html;
+    }
+
+    // State management
+    let currentThreadId = null;
+    let isWaitingForResponse = false;
+
+    // Load saved settings
+    const rawStoredToken = localStorage.getItem('cpg_jwt_token') || '';
+    const cleanStoredToken = rawStoredToken.trim().replace(/^Bearer\s+/i, '');
+    const state = {
+      baseUrl: localStorage.getItem('cpg_api_base') || 'http://localhost:8000',
+      token: cleanStoredToken,
+    };
+
+    document.getElementById('api-base-url').value = state.baseUrl;
+    document.getElementById('api-jwt-token').value = state.token;
+
+    // Robust JWT decoding supporting UTF-8 and diverse claim schemas
+    function parseJwtClaims(token) {
+      if (!token || typeof token !== 'string') return null;
+      try {
+        const clean = token.trim().replace(/^Bearer\s+/i, '');
+        const parts = clean.split('.');
+        if (parts.length < 2) return null;
+        let base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+        while (base64.length % 4) base64 += '=';
+        
+        try {
+          const jsonStr = decodeURIComponent(
+            atob(base64)
+              .split('')
+              .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+              .join('')
+          );
+          return JSON.parse(jsonStr);
+        } catch {
+          return JSON.parse(atob(base64));
+        }
+      } catch (err) {
+        return null;
+      }
+    }
+
+    function extractUserIdentity(claims) {
+      if (!claims || typeof claims !== 'object') {
+        return { name: 'Guest User', id: '-', role: 'None', initials: '?' };
+      }
+
+      // 1. Resolve Name from standard & ASP.NET claims
+      let name = '';
+      const nameKeys = [
+        'name', 'Name', 'userName', 'UserName', 'unique_name', 'preferred_username',
+        'given_name', 'email', 'Email',
+        'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name',
+        'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress',
+        'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname'
+      ];
+      for (const k of nameKeys) {
+        if (claims[k] && typeof claims[k] === 'string' && claims[k].trim()) {
+          name = claims[k].trim();
+          break;
+        }
+      }
+      if (!name && claims.sub) {
+        const subStr = String(claims.sub).trim();
+        if (subStr.includes('@')) {
+          const localPart = subStr.split('@')[0];
+          name = localPart.replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        } else {
+          name = subStr;
+        }
+      }
+      if (!name && (claims.userId || claims.UserId || claims.id)) {
+        name = String(claims.userId || claims.UserId || claims.id);
+      }
+      if (!name) name = 'Authenticated User';
+
+      // 2. Resolve User / Subject ID
+      const idKeys = [
+        'userId', 'UserId', 'user_id', 'User_id', 'sub', 'nameid', 'id', 'oid', 'uid',
+        'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'
+      ];
+      let id = '-';
+      for (const k of idKeys) {
+        if (claims[k] && String(claims[k]).trim()) {
+          id = String(claims[k]).trim();
+          break;
+        }
+      }
+
+      // 3. Resolve Role
+      const roleKeys = [
+        'role', 'Role', 'roles', 'Roles',
+        'http://schemas.microsoft.com/ws/2008/06/identity/claims/role',
+        'Dashboard_assign', 'lens'
+      ];
+      let role = 'User';
+      for (const k of roleKeys) {
+        if (claims[k]) {
+          role = Array.isArray(claims[k]) ? claims[k].join(', ') : String(claims[k]);
+          break;
+        }
+      }
+
+      // 4. Calculate Initials
+      const words = name.split(/\s+/).filter(Boolean);
+      let initials = 'U';
+      if (words.length >= 2) {
+        initials = (words[0][0] + words[1][0]).toUpperCase();
+      } else if (words.length === 1 && words[0].length > 0) {
+        initials = words[0].substring(0, 2).toUpperCase();
+      }
+
+      return { name, id, role, initials };
+    }
+
+    function updateUserDisplay(rawToken) {
+      const token = (rawToken || '').trim();
+      const claims = parseJwtClaims(token);
+      const user = extractUserIdentity(claims);
+
+      // Sidebar Footer Profile
+      const sideName = document.getElementById('sidebar-user-name');
+      const sideSub = document.getElementById('sidebar-user-subtitle');
+      const sideAvatar = document.getElementById('sidebar-avatar');
+
+      if (sideName) sideName.innerText = user.name;
+      if (sideSub) {
+        sideSub.innerText = claims ? `ID: ${user.id} • ${user.role}` : 'Click settings to auth';
+      }
+      if (sideAvatar) {
+        if (claims) {
+          sideAvatar.innerHTML = `<span class="text-[11px] font-bold">${escapeHtml(user.initials)}</span>`;
+          sideAvatar.className = 'w-7 h-7 rounded-full bg-gradient-to-tr from-indigo-500 to-teal-400 flex items-center justify-center text-white text-[11px] font-bold shrink-0 shadow-md';
+        } else {
+          sideAvatar.innerText = '?';
+          sideAvatar.className = 'w-7 h-7 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 text-xs font-bold shrink-0';
+        }
+      }
+
+      // Settings Drawer Displays
+      const drawerName = document.getElementById('current-user-display');
+      const drawerId = document.getElementById('current-id-display');
+      const drawerRole = document.getElementById('current-role-display');
+
+      if (drawerName) drawerName.innerText = user.name;
+      if (drawerId) drawerId.innerText = user.id;
+      if (drawerRole) drawerRole.innerText = user.role;
+
+      renderIcons();
+    }
+
+    // Initialize UI
+    window.addEventListener('DOMContentLoaded', () => {
+      renderIcons();
+      checkBackendHealth();
+      loadWelcomeGreeting();
+      if (state.token) {
+        updateUserDisplay(state.token);
+        refreshThreads();
+      } else {
+        updateUserDisplay(null);
+      }
+    });
+
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('hidden');
+    }
+
+    function toggleConfigModal() {
+      const modal = document.getElementById('config-modal');
+      modal.classList.toggle('hidden');
+    }
+
+    function toggleTokenVisibility() {
+      const input = document.getElementById('api-jwt-token');
+      const text = document.getElementById('token-toggle-text');
+      if (input.type === 'password') {
+        input.type = 'text';
+        text.innerText = 'Hide';
+      } else {
+        input.type = 'password';
+        text.innerText = 'Show';
+      }
+    }
+
+    function autoResize(el) {
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, 140) + 'px';
+    }
+
+    function handleKeyDown(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        startNewThread();
+      }
+    }
+
+    const SUMMARY_PROMPTS = {
+      production: "Summarize today's production dashboard, active batches, and throughput.",
+      compliance: "Summarize open deviations, overdue calibrations, and QA compliance alerts."
+    };
+
+    function selectSummaryPrompt(type) {
+      const text = SUMMARY_PROMPTS[type] || '';
+      usePrompt(text);
+    }
+
+    async function triggerDirectSummary(scope) {
+      if (isWaitingForResponse) return;
+      const base = state.baseUrl.replace(/\/+$/, '');
+      const token = (state.token || '').trim().replace(/^Bearer\s+/i, '');
+
+      if (!token) {
+        toggleConfigModal();
+        alert("Please provide a Bearer JWT Token in Settings.");
+        return;
+      }
+
+      appendUserMessage(`⚡ Trigger Dedicated API: POST /v1/summary/${scope}`);
+      appendBotLoading();
+      isWaitingForResponse = true;
+
+      try {
+        const res = await fetch(`${base}/v1/summary/${scope}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({})
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({ detail: res.statusText }));
+          appendBotMessage(`⚠️ **API Error (${res.status})**\n\n\`\`\`json\n${JSON.stringify(errData, null, 2)}\n\`\`\``, errData);
+          const errMsg = errData.detail || errData.message || (typeof errData === 'string' ? errData : `HTTP Error ${res.status}`);
+          appendBotMessage(`⚠️ **Summary Service Notice (${res.status})**\n\n${errMsg}\n\n*Please verify your session credentials and try again.*`);
+          return;
+        }
+
+        const data = await res.json();
+        appendBotMessage(data.summary, data);
+        refreshThreads();
+      } catch (err) {
+        appendBotMessage(`❌ **Connection Failure**\n\nCould not communicate with \`${base}/v1/summary/${scope}\`.\n\n*Details: ${err.message}*`);
+      } finally {
+        isWaitingForResponse = false;
+        removeBotLoading();
+      }
+    }
+
+    function usePrompt(text) {
+      const input = document.getElementById('chat-input');
+      if (!input) return;
+      input.value = text;
+      autoResize(input);
+      input.focus();
+      input.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function useAndSendPrompt(text) {
+      const input = document.getElementById('chat-input');
+      if (!input) return;
+      input.value = text;
+      autoResize(input);
+      sendMessage();
+    }
+
+    function copyMessageText(msgId) {
+      const contentEl = document.getElementById(`${msgId}-content`);
+      const btn = document.getElementById(`${msgId}-copy-btn`);
+      if (!contentEl) return;
+      const text = contentEl.innerText || contentEl.textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        if (btn) {
+          const original = btn.innerHTML;
+          btn.innerHTML = '<span class="text-teal-400 font-semibold">✓ Copied</span>';
+          setTimeout(() => { btn.innerHTML = original; renderIcons(); }, 2000);
+        }
+      }).catch(err => {
+        console.warn("Clipboard copy failed:", err);
+      });
+    }
+
+    async function checkBackendHealth() {
+      const dot = document.getElementById('connection-dot');
+      const text = document.getElementById('connection-text');
+      const base = document.getElementById('api-base-url').value.replace(/\/+$/, '');
+
+      try {
+        const resp = await fetch(`${base}/health`, { method: 'GET' });
+        if (resp.ok) {
+          dot.className = 'w-2 h-2 rounded-full bg-teal-400 animate-pulse';
+          text.innerText = 'Connected';
+          return true;
+        }
+      } catch (err) {
+        dot.className = 'w-2 h-2 rounded-full bg-rose-500';
+        text.innerText = 'Offline';
+        return false;
+      }
+    }
+
+    async function saveAndTestConfig() {
+      const base = document.getElementById('api-base-url').value.trim().replace(/\/+$/, '');
+      let token = document.getElementById('api-jwt-token').value.trim();
+      token = token.replace(/^Bearer\s+/i, '').trim();
+
+      document.getElementById('api-jwt-token').value = token;
+      localStorage.setItem('cpg_api_base', base);
+      localStorage.setItem('cpg_jwt_token', token);
+      state.baseUrl = base;
+      state.token = token;
+
+      await checkBackendHealth();
+      updateUserDisplay(token);
+
+      if (token) {
+        await refreshThreads();
+      }
+
+      loadWelcomeGreeting();
+      toggleConfigModal();
+    }
+
+    async function loadWelcomeGreeting() {
+      const base = state.baseUrl.replace(/\/+$/, '');
+      const token = (state.token || '').trim().replace(/^Bearer\s+/i, '');
+
+      let greetingText = '';
+      if (token) {
+        try {
+          const res = await fetch(`${base}/v1/chat/welcome`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.message) {
+              greetingText = data.message;
+            }
+            if (data.thread_id) {
+              currentThreadId = data.thread_id;
+            }
+          }
+        } catch (e) {
+          console.warn("Could not fetch /v1/chat/welcome:", e);
+        }
+      }
+
+      if (!greetingText) {
+        const claims = parseJwtClaims(token);
+        const user = extractUserIdentity(claims);
+        const hour = new Date().getHours();
+        let period = 'evening';
+        if (hour >= 5 && hour < 12) period = 'morning';
+        else if (hour >= 12 && hour < 17) period = 'afternoon';
+        greetingText = `Good ${period} ${user.name !== 'Guest User' ? user.name : 'there'}, welcome! I can summarize Production and Compliance dashboards.`;
+      }
+
+      renderWelcomeHero(greetingText);
+    }
+
+    function renderWelcomeHero(greetingText = null) {
+      const claims = parseJwtClaims(state.token);
+      const user = extractUserIdentity(claims);
+      
+      let greeting = greetingText;
+      if (!greeting) {
+        const hour = new Date().getHours();
+        let period = 'evening';
+        if (hour >= 5 && hour < 12) period = 'morning';
+        else if (hour >= 12 && hour < 17) period = 'afternoon';
+        greeting = `Good ${period} ${user.name !== 'Guest User' ? user.name : 'there'}, welcome! I can summarize Production and Compliance dashboards.`;
+      }
+
+      const container = document.getElementById('messages-container');
+      container.innerHTML = `
+        <div class="text-center py-8 px-2 max-w-2xl mx-auto space-y-4">
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-500 to-teal-400 flex items-center justify-center mx-auto shadow-lg shadow-indigo-500/20">
+            <i data-lucide="sparkles" class="w-6 h-6 text-white"></i>
+          </div>
+
+          <!-- TIME-OF-DAY GREETING BANNER -->
+          <div class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-medium shadow-sm">
+            <span>👋</span>
+            <span id="welcome-greeting-text">${escapeHtml(greeting)}</span>
+          </div>
+
+          <h2 class="text-xl md:text-2xl font-bold text-white tracking-tight">How can I assist your facility today?</h2>
+          <p class="text-xs text-slate-400 leading-relaxed max-w-lg mx-auto">
+            Connected to <strong>Production</strong>, <strong>Compliance</strong>, and <strong>Facility</strong> APIs. All inquiries enforce read-only execution with 21 CFR Part 11 audit logging.
+          </p>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-left pt-2">
+            
+            <!-- CARD 1: LIVE BATCH INTELLIGENCE -->
+            <div class="p-3.5 rounded-xl bg-[#0e1424] border border-slate-800/80 hover:border-teal-500/60 hover:bg-slate-800/30 transition shadow-sm group">
+              <span class="text-xs font-bold text-teal-400 flex items-center gap-1.5">
+                <i data-lucide="cpu" class="w-3.5 h-3.5"></i> Live Batch Dossier (2026262000)
+              </span>
+              <p class="text-[11px] text-slate-400 mt-1">Full dossier for ben_test_5999: MFR formula, container units, production status & dates.</p>
+              <div class="mt-2.5 flex items-center gap-2">
+                <button onclick="useAndSendPrompt('Give me the full batch record dossier, specifications, and status for batch 2026262000')" class="px-2.5 py-1 text-[10.5px] font-semibold bg-teal-950/90 border border-teal-600/70 text-teal-300 rounded-lg hover:bg-teal-900 transition flex items-center gap-1 shadow-sm">
+                  <i data-lucide="arrow-up" class="w-3 h-3 text-teal-400"></i> Query 2026262000
+                </button>
+                <button onclick="usePrompt('Give me the full batch record dossier, specifications, and status for batch 2026262000')" class="px-2 py-1 text-[10.5px] text-slate-400 hover:text-slate-200 transition">
+                  Edit
+                </button>
+              </div>
+            </div>
+
+            <!-- CARD 2: PRODUCTION SUMMARY -->
+            <div class="p-3.5 rounded-xl bg-[#0e1424] border border-slate-800/80 hover:border-indigo-500/60 hover:bg-slate-800/30 transition shadow-sm group">
+              <span class="text-xs font-bold text-indigo-400 flex items-center gap-1.5">
+                <i data-lucide="activity" class="w-3.5 h-3.5"></i> Production Dashboard
+              </span>
+              <p class="text-[11px] text-slate-400 mt-1">Real-time batch progress, line status, and operational throughput metrics.</p>
+              <div class="mt-2.5 flex items-center gap-2">
+                <button onclick="triggerDirectSummary('production')" class="px-2.5 py-1 text-[10.5px] font-semibold bg-indigo-950/90 border border-indigo-600/70 text-indigo-300 rounded-lg hover:bg-indigo-900 transition flex items-center gap-1 shadow-sm">
+                  <i data-lucide="zap" class="w-3 h-3 text-indigo-400"></i> Trigger API (/production)
+                </button>
+                <button onclick="selectSummaryPrompt('production')" class="px-2 py-1 text-[10.5px] text-slate-400 hover:text-slate-200 transition">
+                  Edit
+                </button>
+              </div>
+            </div>
+
+            <!-- CARD 3: COMPLIANCE & DEVIATIONS -->
+            <div class="p-3.5 rounded-xl bg-[#0e1424] border border-slate-800/80 hover:border-amber-500/60 hover:bg-slate-800/30 transition shadow-sm group">
+              <span class="text-xs font-bold text-amber-400 flex items-center gap-1.5">
+                <i data-lucide="sliders" class="w-3.5 h-3.5"></i> Compliance & QA Alerts
+              </span>
+              <p class="text-[11px] text-slate-400 mt-1">Active deviations, equipment PM status, and cleanroom EM excursions.</p>
+              <div class="mt-2.5 flex items-center gap-2">
+                <button onclick="triggerDirectSummary('compliance')" class="px-2.5 py-1 text-[10.5px] font-semibold bg-amber-950/90 border border-amber-600/70 text-amber-300 rounded-lg hover:bg-amber-900 transition flex items-center gap-1 shadow-sm">
+                  <i data-lucide="zap" class="w-3 h-3 text-amber-400"></i> Trigger API (/compliance)
+                </button>
+                <button onclick="selectSummaryPrompt('compliance')" class="px-2 py-1 text-[10.5px] text-slate-400 hover:text-slate-200 transition">
+                  Edit
+                </button>
+              </div>
+            </div>
+
+            <!-- CARD 4: GENEALOGY & TRACEABILITY -->
+            <div class="p-3.5 rounded-xl bg-[#0e1424] border border-slate-800/80 hover:border-purple-500/60 hover:bg-slate-800/30 transition shadow-sm group">
+              <span class="text-xs font-bold text-purple-400 flex items-center gap-1.5">
+                <i data-lucide="network" class="w-3.5 h-3.5"></i> Material Traceability
+              </span>
+              <p class="text-[11px] text-slate-400 mt-1">End-to-end component genealogy, supplier lots, and equipment history.</p>
+              <div class="mt-2.5 flex items-center gap-2">
+                <button onclick="useAndSendPrompt('Trace the genealogy, consumed materials, and equipment history for batch 2026262000')" class="px-2.5 py-1 text-[10.5px] font-semibold bg-purple-950/90 border border-purple-600/70 text-purple-300 rounded-lg hover:bg-purple-900 transition flex items-center gap-1 shadow-sm">
+                  <i data-lucide="arrow-up" class="w-3 h-3 text-purple-400"></i> Trace 2026262000
+                </button>
+                <button onclick="usePrompt('Trace the genealogy, consumed materials, and equipment history for batch 2026262000')" class="px-2 py-1 text-[10.5px] text-slate-400 hover:text-slate-200 transition">
+                  Edit
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      `;
+      renderIcons();
+    }
+
+    function appendUserMessage(text) {
+      const container = document.getElementById('messages-container');
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'flex justify-end';
+      msgDiv.innerHTML = `
+        <div class="max-w-xl bg-indigo-600 text-white rounded-2xl rounded-tr-sm px-4 py-2.5 shadow-md">
+          <p class="text-sm leading-relaxed whitespace-pre-wrap">${escapeHtml(text)}</p>
+          <span class="block text-[9px] text-indigo-200 text-right mt-1">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+        </div>
+      `;
+      container.appendChild(msgDiv);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function appendBotLoading() {
+      const container = document.getElementById('messages-container');
+      const loaderDiv = document.createElement('div');
+      loaderDiv.id = 'bot-typing-indicator';
+      loaderDiv.className = 'flex items-start space-x-3';
+      loaderDiv.innerHTML = `
+        <div class="w-7 h-7 rounded-lg bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shrink-0 mt-0.5">
+          <i data-lucide="bot" class="w-3.5 h-3.5"></i>
+        </div>
+        <div class="bg-[#0e1424] border border-slate-800 rounded-2xl rounded-tl-sm px-4 py-2.5 flex items-center space-x-1.5 text-slate-400 text-xs">
+          <span>Consulting CPG APIs</span>
+          <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 typing-dot inline-block ml-1"></span>
+          <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 typing-dot inline-block"></span>
+          <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 typing-dot inline-block"></span>
+        </div>
+      `;
+      container.appendChild(loaderDiv);
+      container.scrollTop = container.scrollHeight;
+      renderIcons();
+    }
+
+    function removeBotLoading() {
+      const el = document.getElementById('bot-typing-indicator');
+      if (el) el.remove();
+    }
+
+    function appendBotMessage(markdownContent, rawDebug = null) {
+      removeBotLoading();
+      const container = document.getElementById('messages-container');
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'flex items-start space-x-3 w-full';
+
+      const renderedHtml = renderMarkdown(markdownContent);
+      const msgId = 'msg-' + Math.random().toString(36).substr(2, 9);
+
+      // Detect if this message relates to a batch/lot
+      const batchMatch = markdownContent.match(/\b(\d{6,12}|[A-Za-z]{1,4}-\d{3,8})\b/);
+      const detectedLot = batchMatch ? batchMatch[0] : null;
+
+      msgDiv.innerHTML = `
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 via-teal-500 to-emerald-400 flex items-center justify-center text-white shrink-0 mt-0.5 shadow-md shadow-indigo-500/20">
+          <i data-lucide="bot" class="w-4 h-4"></i>
+        </div>
+        <div class="w-full max-w-3xl bg-[#0c1220]/95 border border-slate-700/60 text-slate-200 rounded-2xl rounded-tl-sm p-4 shadow-xl space-y-3">
+          
+          <!-- MAIN MARKDOWN DOSSIER -->
+          <div id="${msgId}-content" class="prose-cpg text-sm leading-relaxed overflow-x-auto">${renderedHtml}</div>
+
+          <!-- CONTEXTUAL GMP ACTION CHIPS -->
+          ${detectedLot ? `
+            <div class="pt-2 border-t border-slate-800 flex flex-wrap items-center gap-1.5">
+              <span class="text-[10px] uppercase font-semibold tracking-wider text-slate-500 mr-1">Deep Dive:</span>
+              <button onclick="useAndSendPrompt('Trace the raw material lots, genealogy, and ingredients for batch ${escapeHtml(detectedLot)}')" class="px-2.5 py-1 text-[11px] font-medium bg-slate-800/80 hover:bg-teal-950 border border-slate-700/70 hover:border-teal-600 text-teal-300 rounded-lg transition flex items-center gap-1 shadow-sm">
+                <i data-lucide="network" class="w-3 h-3"></i> Trace Genealogy
+              </button>
+              <button onclick="useAndSendPrompt('Check for any open deviations, OOS, or QA holds on batch ${escapeHtml(detectedLot)}')" class="px-2.5 py-1 text-[11px] font-medium bg-slate-800/80 hover:bg-amber-950 border border-slate-700/70 hover:border-amber-600 text-amber-300 rounded-lg transition flex items-center gap-1 shadow-sm">
+                <i data-lucide="activity" class="w-3 h-3"></i> QA Deviations
+              </button>
+              <button onclick="useAndSendPrompt('What equipment calibrations and facility suites were used for batch ${escapeHtml(detectedLot)}?')" class="px-2.5 py-1 text-[11px] font-medium bg-slate-800/80 hover:bg-indigo-950 border border-slate-700/70 hover:border-indigo-600 text-indigo-300 rounded-lg transition flex items-center gap-1 shadow-sm">
+                <i data-lucide="cpu" class="w-3 h-3"></i> Equipment Status
+              </button>
+            </div>
+          ` : ''}
+
+          <!-- TRIGGERED BACKEND MICROSERVICES -->
+          ${(rawDebug && rawDebug.endpoints_triggered && rawDebug.endpoints_triggered.length > 0) ? `
+            <div class="p-2.5 bg-black/40 border border-slate-800/80 rounded-xl space-y-1.5">
+              <div class="flex items-center space-x-1.5 text-[10.5px] font-semibold text-teal-400">
+                <span class="w-2 h-2 rounded-full bg-teal-400 animate-pulse"></span>
+                <span>Verified Downstream Microservices (${rawDebug.endpoints_triggered.length})</span>
+              </div>
+              <div class="space-y-1">
+                ${rawDebug.endpoints_triggered.map(ep => {
+                  const cleanEp = ep.replace('https://production-api.cpguardian.com', '').replace('https://facility-api.cpguardian.com', '').replace('https://compliance-api.cpguardian.com', '');
+                  return `
+                    <div class="text-[10px] font-mono bg-slate-900/80 border border-slate-800 text-slate-300 px-2 py-1 rounded flex items-center justify-between">
+                      <span class="text-teal-300 truncate">${escapeHtml(cleanEp || ep)}</span>
+                      <span class="text-[9px] px-1 rounded bg-teal-950 text-teal-400 border border-teal-800/60 shrink-0 ml-2 font-semibold">200 OK</span>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+          ` : ''}
+
+          <!-- FOOTER: 21 CFR PART 11 STATUS & COPY ACTION -->
+          <div class="flex items-center justify-between text-[10.5px] text-slate-400 pt-2 border-t border-slate-800/80">
+            <div class="flex items-center space-x-1.5 text-slate-400">
+              <span class="w-1.5 h-1.5 rounded-full bg-teal-400"></span>
+              <span>21 CFR Part 11 Audit Grounded</span>
+            </div>
+            <div class="flex items-center space-x-3">
+              <button onclick="copyMessageText('${msgId}')" id="${msgId}-copy-btn" class="hover:text-slate-200 text-slate-400 flex items-center space-x-1 font-medium transition">
+                <i data-lucide="copy" class="w-3 h-3"></i>
+                <span>Copy</span>
+              </button>
+              <span class="text-slate-500">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+            </div>
+          </div>
+
+        </div>
+      `;
+      container.appendChild(msgDiv);
+      container.scrollTop = container.scrollHeight;
+      renderIcons();
+    }
+
+    function toggleDebug(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('hidden');
+    }
+
+    async function sendMessage() {
+      if (isWaitingForResponse) return;
+      const input = document.getElementById('chat-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const base = state.baseUrl.replace(/\/+$/, '');
+      const token = (state.token || '').trim().replace(/^Bearer\s+/i, '');
+
+      if (!token) {
+        toggleConfigModal();
+        alert("Please provide a Bearer JWT Token in Settings.");
+        return;
+      }
+
+      // Append user message to canvas
+      input.value = '';
+      autoResize(input);
+      appendUserMessage(text);
+      appendBotLoading();
+      isWaitingForResponse = true;
+
+      try {
+        const payload = {
+          message: text,
+          thread_id: currentThreadId || undefined,
+        };
+
+        const res = await fetch(`${base}/v1/chat`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({ detail: res.statusText }));
+          const errMsg = errData.detail || errData.message || (typeof errData === 'string' ? errData : `HTTP Error ${res.status}`);
+          appendBotMessage(`⚠️ **Downstream Service Notice (${res.status})**\n\n${errMsg}\n\n*Please check facility logs or verify session credentials.*`);
+          return;
+        }
+
+        const data = await res.json();
+        if (data.thread_id) {
+          currentThreadId = data.thread_id;
+        }
+
+        appendBotMessage(data.message, data);
+        refreshThreads();
+
+      } catch (err) {
+        appendBotMessage(`❌ **Connection Failure**\n\nCould not communicate with \`${base}/v1/chat\`.\n\n*Details: ${err.message}*`);
+      } finally {
+        isWaitingForResponse = false;
+        removeBotLoading();
+      }
+    }
+
+    async function refreshThreads() {
+      const container = document.getElementById('threads-container');
+      const base = state.baseUrl.replace(/\/+$/, '');
+      const token = (state.token || '').trim().replace(/^Bearer\s+/i, '');
+      if (!token) return;
+
+      try {
+        const res = await fetch(`${base}/v1/chat/threads`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) return;
+        const threads = await res.json();
+
+        if (threads.length === 0) {
+          container.innerHTML = `<div class="p-3 text-[11px] text-slate-400 text-center italic">No prior conversations</div>`;
+          return;
+        }
+
+        container.innerHTML = threads.map(t => `
+          <div onclick="selectThread('${t.id}')" class="group flex items-center justify-between px-2.5 py-2 rounded-xl text-xs cursor-pointer transition ${currentThreadId === t.id ? 'bg-indigo-600/20 text-indigo-300 font-medium border border-indigo-500/30' : 'text-slate-300 hover:bg-slate-800/60'}">
+            <div class="flex items-center space-x-2 truncate">
+              <i data-lucide="message-square" class="w-3.5 h-3.5 shrink-0 opacity-60"></i>
+              <span class="truncate">${escapeHtml(t.title || 'Investigation')}</span>
+            </div>
+            <button onclick="event.stopPropagation(); deleteThread('${t.id}')" title="Delete thread" class="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-rose-400 p-0.5 rounded transition">
+              <i data-lucide="trash-2" class="w-3 h-3"></i>
+            </button>
+          </div>
+        `).join('');
+        renderIcons();
+      } catch (err) {
+        console.warn("Could not fetch threads:", err);
+      }
+    }
+
+    async function selectThread(threadId) {
+      if (isWaitingForResponse) return;
+      const base = state.baseUrl.replace(/\/+$/, '');
+      const token = (state.token || '').trim().replace(/^Bearer\s+/i, '');
+      if (!token) return;
+
+      currentThreadId = threadId;
+      refreshThreads();
+
+      const container = document.getElementById('messages-container');
+      container.innerHTML = `
+        <div class="flex items-center justify-center py-20 text-slate-500 text-xs space-x-2">
+          <div class="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+          <span>Loading chat history...</span>
+        </div>
+      `;
+
+      try {
+        const res = await fetch(`${base}/v1/chat/threads/${threadId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) {
+          container.innerHTML = `<div class="p-6 text-center text-rose-400 text-sm">Failed to load conversation history (${res.status}).</div>`;
+          return;
+        }
+
+        const data = await res.json();
+        container.innerHTML = '';
+
+        if (data.turns && data.turns.length > 0) {
+          data.turns.forEach(turn => {
+            appendUserMessage(turn.request);
+            appendBotMessage(turn.response);
+          });
+        } else if (data.messages && data.messages.length > 0) {
+          data.messages.forEach(msg => {
+            if (msg.role === 'user') {
+              appendUserMessage(msg.content);
+            } else {
+              appendBotMessage(msg.content);
+            }
+          });
+        } else {
+          loadWelcomeGreeting();
+        }
+
+        container.scrollTop = container.scrollHeight;
+      } catch (err) {
+        container.innerHTML = `<div class="p-6 text-center text-rose-400 text-sm">Error loading history: ${err.message}</div>`;
+      }
+    }
+
+    async function deleteThread(threadId) {
+      if (!confirm("Are you sure you want to delete this conversation thread?")) return;
+      const base = state.baseUrl.replace(/\/+$/, '');
+      const token = (state.token || '').trim().replace(/^Bearer\s+/i, '');
+      if (!token) return;
+
+      try {
+        const res = await fetch(`${base}/v1/chat/threads/${threadId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok || res.status === 204) {
+          if (currentThreadId === threadId) {
+            startNewThread();
+          } else {
+            refreshThreads();
+          }
+        }
+      } catch (err) {
+        console.error("Failed to delete thread:", err);
+      }
+    }
+
+    async function startNewThread() {
+      currentThreadId = null;
+      await loadWelcomeGreeting();
+      await refreshThreads();
+    }
+
+    function escapeHtml(string) {
+      const entityMap = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+      return String(string).replace(/[&<>"']/g, s => entityMap[s]);
+    }
+  </script>
+</body>
+</html>

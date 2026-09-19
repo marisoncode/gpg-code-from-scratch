@@ -1,0 +1,2573 @@
+{
+  "total_endpoints": 316,
+  "aliases": {
+    "facility_user": {
+      "production_dashboard_details": "/api/DashboardProduction/GetProductionDetails",
+      "today_production": "/api/DashboardMonitor/GetTodayProduction",
+      "out_of_compliance_details": "/api/DashboardMonitor/GetOutOfComplianceDetails/{kind}",
+      "manage_user": "/api/ManageUser/{id}",
+      "application_settings": "/api/ApplicationSettings"
+    },
+    "production": {
+      "batch_record": "/api/BatchRecord",
+      "batch_record_by_id": "/api/BatchRecord/{id}",
+      "chemical_child_inventory": "/api/ChemicalChildInventory",
+      "component_child_inventory": "/api/ComponentChildInventory",
+      "chemical_inventory": "/api/ChemicalInventory",
+      "batch_coversheet": "/api/BatchCoverSheet/GenerateBatchCoverSheet"
+    },
+    "compliance": {
+      "training": "/api/Training",
+      "training_details": "/api/Training/TrainingDetails",
+      "equipment": "/api/Equipment",
+      "equipment_by_id": "/api/Equipment/{id}",
+      "environmental_monitoring": "/api/EnvironmentalMonitoring",
+      "task_management": "/api/v1/TaskManagement",
+      "task_management_by_id": "/api/v1/TaskManagement/{id}",
+      "aseptic_process": "/api/v1/AsepticProcess"
+    },
+    "order": {
+      "audit_trail": "/api/AuditTrail/{kind}",
+      "activity_log": "/api/AuditTrail/ActivityLog/{refenceKind}",
+      "customer": "/api/Customer"
+    }
+  },
+  "endpoints": {
+    "facility_user": [
+      {
+        "method": "GET",
+        "path": "/api/ApplicationSettings",
+        "tags": [
+          "ApplicationSettings"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/ApplicationSettings",
+        "tags": [
+          "ApplicationSettings"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/ApplicationSettings/{id}",
+        "tags": [
+          "ApplicationSettings"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/ApplicationSettings/{id}",
+        "tags": [
+          "ApplicationSettings"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/ApplicationSettings/{id}",
+        "tags": [
+          "ApplicationSettings"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/ApplicationSettings/Easypost/{key}",
+        "tags": [
+          "ApplicationSettings"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/ApplicationSettings/Stripe/{key}",
+        "tags": [
+          "ApplicationSettings"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/ApplicationSettings/ConnectQuickBook",
+        "tags": [
+          "ApplicationSettings"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/ApplicationSettings/GetAuthorizationUrl",
+        "tags": [
+          "ApplicationSettings"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/ApplicationSettings/GetAuthToken",
+        "tags": [
+          "ApplicationSettings"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/ApplicationSettings/ApiCall",
+        "tags": [
+          "ApplicationSettings"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/ApplicationSettings/GetClientDetails/{tenentId}",
+        "tags": [
+          "ApplicationSettings"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/CompanySettings/{id}",
+        "tags": [
+          "CompanySettings"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/CompanySettings/{id}",
+        "tags": [
+          "CompanySettings"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/CompanySettings/LabelSize",
+        "tags": [
+          "CompanySettings"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/CompanySettings/FieldValues",
+        "tags": [
+          "CompanySettings"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/CompanySettings/AddSupplierFile/{id}",
+        "tags": [
+          "CompanySettings"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/CompanySettings/GetSupplierFile",
+        "tags": [
+          "CompanySettings"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/CreateJiraIssue",
+        "tags": [
+          "CreateJiraIssue"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/CreateJiraIssue",
+        "tags": [
+          "CreateJiraIssue"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/DashboardMonitor",
+        "tags": [
+          "DashboardMonitor"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/DashboardMonitor/GetTodayProduction",
+        "tags": [
+          "DashboardMonitor"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/DashboardMonitor/GetBatchInprocess",
+        "tags": [
+          "DashboardMonitor"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/DashboardMonitor/GetTodayTask",
+        "tags": [
+          "DashboardMonitor"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/DashboardMonitor/GetFutureTask",
+        "tags": [
+          "DashboardMonitor"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/DashboardMonitor/GetOutOfComplianceDetails/{kind}",
+        "tags": [
+          "DashboardMonitor"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/DashboardProduction",
+        "tags": [
+          "DashboardProduction"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/DashboardProduction/BatchByLocation",
+        "tags": [
+          "DashboardProduction"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/DashboardProduction/GetProductionDashboardAlert",
+        "tags": [
+          "DashboardProduction"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/DashboardProduction/GetProductionDetails",
+        "tags": [
+          "DashboardProduction"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/DashboardProduction/GetTodaysBatch",
+        "tags": [
+          "DashboardProduction"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/DashboardProduction/GetOperatorList",
+        "tags": [
+          "DashboardProduction"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/DashboardProduction/GetNotifications/{notificationType}/{userId}",
+        "tags": [
+          "DashboardProduction"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/DashboardSales",
+        "tags": [
+          "DashboardSales"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/DashboardSales",
+        "tags": [
+          "DashboardSales"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/DashboardSales/GetSalesComparison",
+        "tags": [
+          "DashboardSales"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/GenerateLabelBarcodeScan/GenerateLabel",
+        "tags": [
+          "GenerateLabelBarcodeScan"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/GenerateLabelBarcodeScan/ScanBarcode/{input}",
+        "tags": [
+          "GenerateLabelBarcodeScan"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/GenerateLabelBarcodeScan/Warmup",
+        "tags": [
+          "GenerateLabelBarcodeScan"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/LoginFacility",
+        "tags": [
+          "LoginFacility"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/LoginFacility/ResetPassword",
+        "tags": [
+          "LoginFacility"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/LoginFacility/ForgetPassword",
+        "tags": [
+          "LoginFacility"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/LoginFacility/ChangePassword",
+        "tags": [
+          "LoginFacility"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/LoginFacility/ForceLogin",
+        "tags": [
+          "LoginFacility"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/LoginFacility/Logout",
+        "tags": [
+          "LoginFacility"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/LoginView/GetLoginView",
+        "tags": [
+          "LoginView"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/ManageUser",
+        "tags": [
+          "ManageUser"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/ManageUser",
+        "tags": [
+          "ManageUser"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/ManageUser/{id}",
+        "tags": [
+          "ManageUser"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/ManageUser/{id}",
+        "tags": [
+          "ManageUser"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/ManageUser/{id}",
+        "tags": [
+          "ManageUser"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/ManageUser/SeceretCode/{id}",
+        "tags": [
+          "ManageUser"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/ManageUser/VerifyCode/{secretCode},{type},{moduleId}",
+        "tags": [
+          "ManageUser"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/ManageUser/GetBatches",
+        "tags": [
+          "ManageUser"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/ManageUser/RemoveUserInBatch/{id}",
+        "tags": [
+          "ManageUser"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/ManageUser/GetUserForReplaceBatch/{batchId}",
+        "tags": [
+          "ManageUser"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/ManageUser/ReplaceUserInBatch",
+        "tags": [
+          "ManageUser"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/Options/Customer/{kind}",
+        "tags": [
+          "Options"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/Options/MasterFormulation/{kind}",
+        "tags": [
+          "Options"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/Options/Facility/{kind}",
+        "tags": [
+          "Options"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/Options/Training/{kind}",
+        "tags": [
+          "Options"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/Options/User/{kind}",
+        "tags": [
+          "Options"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/Options/{kind}",
+        "tags": [
+          "Options"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/Report",
+        "tags": [
+          "Report"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/Report/CSInventory",
+        "tags": [
+          "Report"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/Report/MFRByInventory/{type}/{inventoryId}",
+        "tags": [
+          "Report"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/Report/Batch",
+        "tags": [
+          "Report"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/Report/MFR",
+        "tags": [
+          "Report"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/Report/Order/{orderType}",
+        "tags": [
+          "Report"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/Report/Order/{orderType}/{lotNumber}",
+        "tags": [
+          "Report"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/Report/Inventory",
+        "tags": [
+          "Report"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/Report/Inventory/{kind}/{lotNumber}",
+        "tags": [
+          "Report"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/Report/Customer",
+        "tags": [
+          "Report"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/Report/Customer/WithAssigned/{type}",
+        "tags": [
+          "Report"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/Report/Sales",
+        "tags": [
+          "Report"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/Report/Sales/{type}",
+        "tags": [
+          "Report"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/Report/FinalProduct/{type}",
+        "tags": [
+          "Report"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/Report/InventoryReport/{type}",
+        "tags": [
+          "Report"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/Report/Recall/{type}",
+        "tags": [
+          "Report"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/Report/Monitoring/{reportType}/{module}",
+        "tags": [
+          "Report"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/Report/Status/{module}",
+        "tags": [
+          "Report"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/Report/Equipment",
+        "tags": [
+          "Report"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/Report/Facility",
+        "tags": [
+          "Report"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/Report/EMReport",
+        "tags": [
+          "Report"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/Report/UserReport/{module}",
+        "tags": [
+          "Report"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/Report/Option/{module}",
+        "tags": [
+          "Report"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/Report/AutoCompleteOptions/{module}",
+        "tags": [
+          "Report"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/Report/GenerateReport/{reportType}",
+        "tags": [
+          "Report"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/Report/GetFacilityOptions/{kind}",
+        "tags": [
+          "Report"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/UserProfile",
+        "tags": [
+          "UserProfile"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/UserProfile",
+        "tags": [
+          "UserProfile"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/UserProfile/{id}",
+        "tags": [
+          "UserProfile"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/UserProfile/{id}",
+        "tags": [
+          "UserProfile"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/UserProfile/{id}",
+        "tags": [
+          "UserProfile"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/UserRole",
+        "tags": [
+          "UserRole"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/UserRole",
+        "tags": [
+          "UserRole"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/UserRole/{id}",
+        "tags": [
+          "UserRole"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/UserRole/{id}",
+        "tags": [
+          "UserRole"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/UserRole/{id}",
+        "tags": [
+          "UserRole"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/UserRole/Role/{Role_id}",
+        "tags": [
+          "UserRole"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/UserRole/AssignUserRole",
+        "tags": [
+          "UserRole"
+        ],
+        "summary": ""
+      }
+    ],
+    "production": [
+      {
+        "method": "POST",
+        "path": "/api/BatchCoverSheet/GenerateBatchCoverSheet",
+        "tags": [
+          "BatchCoverSheet"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/BatchRecord",
+        "tags": [
+          "BatchRecord"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/BatchRecord",
+        "tags": [
+          "BatchRecord"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/BatchRecord/{id}",
+        "tags": [
+          "BatchRecord"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/BatchRecord/{id}",
+        "tags": [
+          "BatchRecord"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/BatchRecord/{id}",
+        "tags": [
+          "BatchRecord"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/BatchRecord/GetLotByDate",
+        "tags": [
+          "BatchRecord"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/BatchRecord/GetMasterRecord",
+        "tags": [
+          "BatchRecord"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/BatchRecord/UpdateBatchProcess/{id}",
+        "tags": [
+          "BatchRecord"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/BatchRecord/GetBatchCaseList",
+        "tags": [
+          "BatchRecord"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/BatchRecord/GenerateLabel",
+        "tags": [
+          "BatchRecord"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/BatchRecord/AddLotDetails",
+        "tags": [
+          "BatchRecord"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/BatchRecord/GetOperatorList",
+        "tags": [
+          "BatchRecord"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/BatchRecord/GetSnapUrlList",
+        "tags": [
+          "BatchRecord"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/BatchRecord/UpdateBatchUnits/{id}",
+        "tags": [
+          "BatchRecord"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/BatchRecord/AssignedUserNotification",
+        "tags": [
+          "BatchRecord"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/BatchRecord/GetEquipments",
+        "tags": [
+          "BatchRecord"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/BatchRecord/ChangeChemicalLot",
+        "tags": [
+          "BatchRecord"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/BatchRecord/ChangeComponentLot",
+        "tags": [
+          "BatchRecord"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/BatchRecord/GetChildInventory/{kind}/{Master_id}",
+        "tags": [
+          "BatchRecord"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/BatchRecord/GetBatchDetails/{barcode}",
+        "tags": [
+          "BatchRecord"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/BatchRecord/GetMFR",
+        "tags": [
+          "BatchRecord"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/BatchRecord/GetChildBatches/{mfrId}/{quantity}",
+        "tags": [
+          "BatchRecord"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/BatchRecord/GetMFRForMasterBatch/{mfrId}",
+        "tags": [
+          "BatchRecord"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/BatchRecord/EditInventoryQuantity/{type}/{typeId}",
+        "tags": [
+          "BatchRecord"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/BatchRecord/CreateCustomLabel",
+        "tags": [
+          "BatchRecord"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/ChemicalChildInventory",
+        "tags": [
+          "ChemicalChildInventory"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/ChemicalChildInventory",
+        "tags": [
+          "ChemicalChildInventory"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/ChemicalChildInventory/{id}",
+        "tags": [
+          "ChemicalChildInventory"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/ChemicalChildInventory/{id}",
+        "tags": [
+          "ChemicalChildInventory"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/ChemicalChildInventory/{id}",
+        "tags": [
+          "ChemicalChildInventory"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/ChemicalChildInventory/AdjustQuantity/{id}",
+        "tags": [
+          "ChemicalChildInventory"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/ChemicalInventory",
+        "tags": [
+          "ChemicalInventory"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/ChemicalInventory",
+        "tags": [
+          "ChemicalInventory"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/ChemicalInventory/{id}",
+        "tags": [
+          "ChemicalInventory"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/ChemicalInventory/{id}",
+        "tags": [
+          "ChemicalInventory"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/ChemicalInventory/{id}",
+        "tags": [
+          "ChemicalInventory"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/ComponentChildInventory",
+        "tags": [
+          "ComponentChildInventory"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/ComponentChildInventory",
+        "tags": [
+          "ComponentChildInventory"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/ComponentChildInventory/{id}",
+        "tags": [
+          "ComponentChildInventory"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/ComponentChildInventory/{id}",
+        "tags": [
+          "ComponentChildInventory"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/ComponentChildInventory/{id}",
+        "tags": [
+          "ComponentChildInventory"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/ComponentChildInventory/AdjustQuantity/{id}",
+        "tags": [
+          "ComponentChildInventory"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/ComponentInventory",
+        "tags": [
+          "ComponentInventory"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/ComponentInventory",
+        "tags": [
+          "ComponentInventory"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/ComponentInventory/{id}",
+        "tags": [
+          "ComponentInventory"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/ComponentInventory/{id}",
+        "tags": [
+          "ComponentInventory"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/ComponentInventory/{id}",
+        "tags": [
+          "ComponentInventory"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/FileUpload",
+        "tags": [
+          "FileUpload"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/FileUpload/{fileName}/{id}/{recordId}",
+        "tags": [
+          "FileUpload"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/FileUpload/{fileName}/{id}/{recordId}/{childId}",
+        "tags": [
+          "FileUpload"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/FinalProduct",
+        "tags": [
+          "FinalProduct"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/FinalProduct",
+        "tags": [
+          "FinalProduct"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/FinalProduct/{id}",
+        "tags": [
+          "FinalProduct"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/FinalProduct/{id}",
+        "tags": [
+          "FinalProduct"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/FinalProduct/{id}",
+        "tags": [
+          "FinalProduct"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/FinalProductChild",
+        "tags": [
+          "FinalProductChild"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/FinalProductChild",
+        "tags": [
+          "FinalProductChild"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/FinalProductChild/{id}",
+        "tags": [
+          "FinalProductChild"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/FinalProductChild/{id}",
+        "tags": [
+          "FinalProductChild"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/FinalProductChild/{id}",
+        "tags": [
+          "FinalProductChild"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/FinalProductChild/CaseLabelGeneration/{finalUnitId}/ {lotNumber}",
+        "tags": [
+          "FinalProductChild"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/MasterFormulationRecord",
+        "tags": [
+          "MasterFormulationRecord"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/MasterFormulationRecord",
+        "tags": [
+          "MasterFormulationRecord"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/MasterFormulationRecord/{id}",
+        "tags": [
+          "MasterFormulationRecord"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/MasterFormulationRecord/{id}",
+        "tags": [
+          "MasterFormulationRecord"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/MasterFormulationRecord/{id}",
+        "tags": [
+          "MasterFormulationRecord"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/MasterFormulationRecord/GetEquipment/{locationId}",
+        "tags": [
+          "MasterFormulationRecord"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/MasterFormulationRecord/NDC/{Ndc}",
+        "tags": [
+          "MasterFormulationRecord"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/MasterFormulationRecord/Copy/{id}",
+        "tags": [
+          "MasterFormulationRecord"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/MasterFormulationRecord/CMS/{id}",
+        "tags": [
+          "MasterFormulationRecord"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/MasterFormulationRecord/SKU/{id}",
+        "tags": [
+          "MasterFormulationRecord"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/MasterFormulationRecord/GenerateMFRpdf",
+        "tags": [
+          "MasterFormulationRecord"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/MasterFormulationRecord/PartialActiveConfirmation/{id}",
+        "tags": [
+          "MasterFormulationRecord"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/ProductionCalendar",
+        "tags": [
+          "ProductionCalendar"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/ProductionScheduler/GetOrderListWithFinalProduct",
+        "tags": [
+          "ProductionScheduler"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/ProductionScheduler/GetOrderListWithInvoice",
+        "tags": [
+          "ProductionScheduler"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/ProductionScheduler/GetLotNumberForBatch",
+        "tags": [
+          "ProductionScheduler"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/ProductionScheduler/GetMasterIdForBatch",
+        "tags": [
+          "ProductionScheduler"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/ProductionScheduler/GetMaterialDetailsByProduct/{reportType}",
+        "tags": [
+          "ProductionScheduler"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/ScaleMonitor/GetCollectionList",
+        "tags": [
+          "ScaleMonitor"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/ScaleMonitor/Login",
+        "tags": [
+          "ScaleMonitor"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/ScaleMonitor/{barcode}",
+        "tags": [
+          "ScaleMonitor"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/ScaleMonitor/{id}",
+        "tags": [
+          "ScaleMonitor"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/ScaleMonitor/VerifyCode/{secretCode}",
+        "tags": [
+          "ScaleMonitor"
+        ],
+        "summary": ""
+      }
+    ],
+    "compliance": [
+      {
+        "method": "GET",
+        "path": "/api/v1/AsepticProcess",
+        "tags": [
+          "AsepticProcess"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/AsepticProcess",
+        "tags": [
+          "AsepticProcess"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/AsepticProcess/{id}",
+        "tags": [
+          "AsepticProcess"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/v1/AsepticProcess/{id}",
+        "tags": [
+          "AsepticProcess"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/v1/AsepticProcess/{id}",
+        "tags": [
+          "AsepticProcess"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/ComplianceCalendar",
+        "tags": [
+          "ComplianceCalendar"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/ComplianceCalendar",
+        "tags": [
+          "ComplianceCalendar"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/EnvironmentalMonitoring",
+        "tags": [
+          "EnvironmentalMonitoring"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/EnvironmentalMonitoring",
+        "tags": [
+          "EnvironmentalMonitoring"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/EnvironmentalMonitoring/{id}",
+        "tags": [
+          "EnvironmentalMonitoring"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/EnvironmentalMonitoring/{id}",
+        "tags": [
+          "EnvironmentalMonitoring"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/EnvironmentalMonitoring/{id}",
+        "tags": [
+          "EnvironmentalMonitoring"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/EnvironmentalMonitoring/BatchById/{id}",
+        "tags": [
+          "EnvironmentalMonitoring"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/EnvironmentalMonitoring/EMByLocationId",
+        "tags": [
+          "EnvironmentalMonitoring"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/EnvironmentalMonitoring/GetEMByBatchLocation/{batchId}",
+        "tags": [
+          "EnvironmentalMonitoring"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/Equipment",
+        "tags": [
+          "Equipment"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/Equipment",
+        "tags": [
+          "Equipment"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/Equipment/{id}",
+        "tags": [
+          "Equipment"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/Equipment/{id}",
+        "tags": [
+          "Equipment"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/Equipment/{id}",
+        "tags": [
+          "Equipment"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/Equipment/MoveEquipment/{id}",
+        "tags": [
+          "Equipment"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/Equipment/CopyEquipment/{id}",
+        "tags": [
+          "Equipment"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/Equipment/GetSamplingLocation/{id}",
+        "tags": [
+          "Equipment"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/Facility",
+        "tags": [
+          "Facility"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/Facility",
+        "tags": [
+          "Facility"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/Facility/{id}",
+        "tags": [
+          "Facility"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/Facility/{id}",
+        "tags": [
+          "Facility"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/Facility/{id}",
+        "tags": [
+          "Facility"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/Facility/CopyFacility",
+        "tags": [
+          "Facility"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/FacilityCalendar",
+        "tags": [
+          "FacilityCalendar"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/FacilityCalendar/filtering",
+        "tags": [
+          "FacilityCalendar"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/Location",
+        "tags": [
+          "Location"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/Location",
+        "tags": [
+          "Location"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/Location/{id}",
+        "tags": [
+          "Location"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/Location/{id}",
+        "tags": [
+          "Location"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/Location/{id}",
+        "tags": [
+          "Location"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/Location/CopyLocation/{id}",
+        "tags": [
+          "Location"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/Location/GetSamplingLocation/{id}",
+        "tags": [
+          "Location"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/MaintenanceRequest",
+        "tags": [
+          "MaintenanceRequest"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/MaintenanceRequest",
+        "tags": [
+          "MaintenanceRequest"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/MaintenanceRequest/{id}",
+        "tags": [
+          "MaintenanceRequest"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/MaintenanceRequest/{id}",
+        "tags": [
+          "MaintenanceRequest"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/MaintenanceRequest/{id}",
+        "tags": [
+          "MaintenanceRequest"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/Notification",
+        "tags": [
+          "Notification"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/Notification/{tenentId},{id}",
+        "tags": [
+          "Notification"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/Notification/{tenentId},{id}",
+        "tags": [
+          "Notification"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/Notification/GetNotificationAsync/{tenentId},{userId}",
+        "tags": [
+          "Notification"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/Notification/GetNotificationCountAsync/{tenentId},{userId}",
+        "tags": [
+          "Notification"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/Notification/{id}",
+        "tags": [
+          "Notification"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/PersonnelMonitoring",
+        "tags": [
+          "PersonnelMonitoring"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/PersonnelMonitoring",
+        "tags": [
+          "PersonnelMonitoring"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/PersonnelMonitoring/{id}",
+        "tags": [
+          "PersonnelMonitoring"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/PersonnelMonitoring/{id}",
+        "tags": [
+          "PersonnelMonitoring"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/PersonnelMonitoring/{id}",
+        "tags": [
+          "PersonnelMonitoring"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/PersonnelMonitoring/BatchById/{id}",
+        "tags": [
+          "PersonnelMonitoring"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/PersonnelMonitoring/PMByOperatorId/{batchId}",
+        "tags": [
+          "PersonnelMonitoring"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/PersonnelMonitoring/GetPMByBatchOperator",
+        "tags": [
+          "PersonnelMonitoring"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/ReleaseManagement",
+        "tags": [
+          "ReleaseManagement"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/ReleaseManagement/{id}",
+        "tags": [
+          "ReleaseManagement"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/ReleaseManagement/{id}",
+        "tags": [
+          "ReleaseManagement"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/TaskManagement",
+        "tags": [
+          "TaskManagement"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/TaskManagement",
+        "tags": [
+          "TaskManagement"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/TaskManagement/{id}",
+        "tags": [
+          "TaskManagement"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/v1/TaskManagement/{id}",
+        "tags": [
+          "TaskManagement"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/v1/TaskManagement/{id}",
+        "tags": [
+          "TaskManagement"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/TaskManagement/GetModuleDetails/{moduleCode}",
+        "tags": [
+          "TaskManagement"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/TaskManagement/GetQuickFindModuleDetails/{moduleCode},{searchKey}",
+        "tags": [
+          "TaskManagement"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/TaskManagement/GetTaskListByAssigneeId/{id}",
+        "tags": [
+          "TaskManagement"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/TaskManagement/GetTaskCountByAssigneeId/{id}",
+        "tags": [
+          "TaskManagement"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/Training",
+        "tags": [
+          "Training"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/Training",
+        "tags": [
+          "Training"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/Training/{id}",
+        "tags": [
+          "Training"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/Training/{id}",
+        "tags": [
+          "Training"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/Training/{id}",
+        "tags": [
+          "Training"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/Training/TrainingDetails",
+        "tags": [
+          "Training"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/Training/TrainingDetails",
+        "tags": [
+          "Training"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/Training/TrainingDetails/{id}",
+        "tags": [
+          "Training"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/Training/TrainingDetails/{id}",
+        "tags": [
+          "Training"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/Training/TrainingDetails/{id}",
+        "tags": [
+          "Training"
+        ],
+        "summary": ""
+      }
+    ],
+    "order": [
+      {
+        "method": "GET",
+        "path": "/api/AuditTrail/{kind}",
+        "tags": [
+          "AuditTrail"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/AuditTrail/ActivityLog/{refenceKind}",
+        "tags": [
+          "AuditTrail"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/AuditTrail/ChildActivityLog/{refenceKind}",
+        "tags": [
+          "AuditTrail"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/Customer",
+        "tags": [
+          "Customer"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/Customer",
+        "tags": [
+          "Customer"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/Customer/{id}",
+        "tags": [
+          "Customer"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/Customer/{id}",
+        "tags": [
+          "Customer"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/Customer/{id}",
+        "tags": [
+          "Customer"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/Customer/GetQBCustomerList",
+        "tags": [
+          "Customer"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/Customer/GetQBResultByQuery",
+        "tags": [
+          "Customer"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/Customer/CreateQBService",
+        "tags": [
+          "Customer"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/EasypostWebhook/{tenentId}",
+        "tags": [
+          "EasypostWebhook"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/ExportExcel",
+        "tags": [
+          "ExportExcel"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/ExternalOrder/Products",
+        "tags": [
+          "ExternalApi"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/ExternalOrder/TrackOrder/{id}",
+        "tags": [
+          "ExternalApi"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/ExternalOrder/Create",
+        "tags": [
+          "ExternalApi"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/ExternalOrder/{id}",
+        "tags": [
+          "ExternalApi"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/ExternalOrder/ConfirmOrder/{id}",
+        "tags": [
+          "ExternalApi"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/ExternalOrder/CancelOrder/{id}",
+        "tags": [
+          "ExternalApi"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/ExternalOrder/DispenseInventory/{id}",
+        "tags": [
+          "ExternalApi"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/ExternalOrder/GetOrderStatus",
+        "tags": [
+          "ExternalApi"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/ExternalOrder/GetBatchesByCompoundId_CPG/{compoundIdCpg}",
+        "tags": [
+          "ExternalApi"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/ExternalOrder/GetBatchByBatchId/{value}",
+        "tags": [
+          "ExternalApi"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/ExternalOrder/UpdateBatchDispenseInformation",
+        "tags": [
+          "ExternalApi"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/ExternalOrder/AddPrescription/{batchId}/{prescriptionId}",
+        "tags": [
+          "ExternalApi"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/ExternalOrder/CancelPrescription/{batchId}",
+        "tags": [
+          "ExternalApi"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/ExternalOrder/ApiKey/{type}",
+        "tags": [
+          "ExternalApi"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/ExternalOrder/GenerateClientId/{tenentId}",
+        "tags": [
+          "ExternalApi"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/ExternalOrder/get/CompoundDrug",
+        "tags": [
+          "ExternalApi"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/ExternalOrder/get/{sku}",
+        "tags": [
+          "ExternalApi"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/Order/Status/{statusType}",
+        "tags": [
+          "Order"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/Order/{id}",
+        "tags": [
+          "Order"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/Order/{id}",
+        "tags": [
+          "Order"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/Order/{id}",
+        "tags": [
+          "Order"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/Order",
+        "tags": [
+          "Order"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/Order/ManageProduct/{type}",
+        "tags": [
+          "Order"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/Order/ConfirmOrder",
+        "tags": [
+          "Order"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/Order/RevertFinalProduct/{finalProductId}",
+        "tags": [
+          "Order"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/Order/CancelOrder",
+        "tags": [
+          "Order"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/Order/RefundOrder",
+        "tags": [
+          "Order"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/Order/{id}/GenerateShipment",
+        "tags": [
+          "Order"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/Order/{id}/OrderConfirmed",
+        "tags": [
+          "Order"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/Order/GenerateInvoice",
+        "tags": [
+          "Order"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/Order/GeneratePackingSlip",
+        "tags": [
+          "Order"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/Order/GeneratePackage/{id}",
+        "tags": [
+          "Order"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "PUT",
+        "path": "/api/Order/BuyOrder/{id}",
+        "tags": [
+          "Order"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/Order/CreateInvoice",
+        "tags": [
+          "Order"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/Order/GetPdfInvoice/{invoiceId}/{orderId}",
+        "tags": [
+          "Order"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/Order/SendInvoice/{invoiceId}",
+        "tags": [
+          "Order"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/WebJob",
+        "tags": [
+          "WebJob"
+        ],
+        "summary": ""
+      },
+      {
+        "method": "GET",
+        "path": "/api/WebJob/ManualUpdate/{tenantId}",
+        "tags": [
+          "WebJob"
+        ],
+        "summary": ""
+      }
+    ]
+  }
+}

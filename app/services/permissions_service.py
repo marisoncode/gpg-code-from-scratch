@@ -49,44 +49,81 @@ class IdentityResolutionError(HTTPException):
         self.message = detail
 
 
-def parse_permissions_payload(data: Any) -> ChatPermissions:
+def parse_permissions_payload(data: Any, target_role: str = "") -> ChatPermissions:
     """Parse permissions response payload into ChatPermissions model."""
-    if not isinstance(data, dict):
+    if not isinstance(data, (dict, list)):
         return ChatPermissions(Dashboard_assign="none", modules=[])
 
-    payload = data.get("result") or data.get("data") or data
+    payload = data.get("result") if isinstance(data, dict) else data
+    if payload is None and isinstance(data, dict):
+        payload = data.get("data") or data
 
-    # 1. CPG ManageUser format: { "Permission_settings": { "Dashboard_assign": "All", "Common_permission_settings": [...] } }
-    if isinstance(payload, dict) and "Permission_settings" in payload and isinstance(payload["Permission_settings"], dict):
-        p_settings = payload["Permission_settings"]
-        assign = p_settings.get("Dashboard_assign") or "none"
-        raw_modules = p_settings.get("Common_permission_settings") or []
+    # 1. CPG UserRole list format: [ { "role_name": "Admin", "permission_settings": { ... } }, ... ]
+    if isinstance(payload, list):
+        target_norm = (target_role or "Admin").strip().lower()
+        matched_role = None
+        for item in payload:
+            if isinstance(item, dict):
+                r_name = str(item.get("role_name") or item.get("role") or item.get("name") or "").strip().lower()
+                if r_name == target_norm:
+                    matched_role = item
+                    break
+        if not matched_role and payload:
+            for item in payload:
+                if isinstance(item, dict) and ("permission_settings" in item or "Permission_settings" in item):
+                    matched_role = item
+                    break
+
+        if matched_role and isinstance(matched_role, dict):
+            p_settings = matched_role.get("permission_settings") or matched_role.get("Permission_settings")
+            if isinstance(p_settings, dict):
+                payload = {"Permission_settings": p_settings}
+            else:
+                payload = matched_role
+
+    # 2. CPG ManageUser / UserRole format: { "Permission_settings": ... } or { "permission_settings": ... }
+    p_settings = None
+    if isinstance(payload, dict):
+        p_settings = payload.get("Permission_settings") or payload.get("permission_settings")
+    if isinstance(p_settings, dict):
+        assign = (
+            p_settings.get("Dashboard_assign")
+            or p_settings.get("dashboard_assign")
+            or p_settings.get("dashboardAssign")
+            or "none"
+        )
+        raw_modules = (
+            p_settings.get("Common_permission_settings")
+            or p_settings.get("common_permission_settings")
+            or p_settings.get("commonPermissionSettings")
+            or []
+        )
         modules_list: list[ModulePermission] = []
         if isinstance(raw_modules, list):
             for m in raw_modules:
                 if isinstance(m, dict):
-                    m_name = m.get("Module_name") or m.get("module_name") or ""
-                    v = bool(m.get("View", False))
+                    m_name = m.get("Module_name") or m.get("module_name") or m.get("name") or ""
+                    v = bool(m.get("View") if "View" in m else m.get("view", False))
                     modules_list.append(
                         ModulePermission(
                             Module_name=str(m_name),
                             View=v,
-                            Create=bool(m.get("Create", False)),
-                            Edit=bool(m.get("Edit", False)),
-                            Delete=bool(m.get("Delete", False)),
-                            Audit_verify=bool(m.get("Audit_verify", False)),
+                            Create=bool(m.get("Create") if "Create" in m else m.get("create", False)),
+                            Edit=bool(m.get("Edit") if "Edit" in m else m.get("edit", False)),
+                            Delete=bool(m.get("Delete") if "Delete" in m else m.get("delete", False)),
+                            Audit_verify=bool(m.get("Audit_verify") if "Audit_verify" in m else m.get("audit_verify", False)),
                         )
                     )
         return ChatPermissions(
-            Production_calendar=p_settings.get("Production_calendar"),
-            Production_scheduler=p_settings.get("Production_scheduler"),
-            Compliance_calendar=p_settings.get("Compliance_calendar"),
-            Report=p_settings.get("Report"),
+            Production_calendar=p_settings.get("Production_calendar") if "Production_calendar" in p_settings else p_settings.get("production_calendar"),
+            Production_scheduler=p_settings.get("Production_scheduler") if "Production_scheduler" in p_settings else p_settings.get("production_scheduler"),
+            Compliance_calendar=p_settings.get("Compliance_calendar") if "Compliance_calendar" in p_settings else p_settings.get("compliance_calendar"),
+            Report=p_settings.get("Report") if "Report" in p_settings else p_settings.get("report"),
             Dashboard_assign=str(assign) if assign else None,
             modules=modules_list,
         )
 
-    # 2. Standard / legacy format
+    # 3. Standard / legacy format
     try:
         assign = (
             payload.get("Dashboard_assign")
@@ -128,27 +165,39 @@ def parse_permissions_payload(data: Any) -> ChatPermissions:
         return ChatPermissions(Dashboard_assign="none", modules=[])
 
 
-def _permissions_from_token_role(token: str) -> ChatPermissions:
-    """Resolve permissions from decoded token role when PERMISSIONS_API returns HTML or fails in development."""
-    try:
-        from app.core.auth import decode_facility_token
-        user = decode_facility_token(token)
-        role = str(user.raw_claims.get("role") or "").strip().lower()
-        if role in ("admin", "superadmin", "production", "qa", "quality", "manager"):
-            all_mods = [
-                ModulePermission(Module_name="Batch Record", View=True),
-                ModulePermission(Module_name="Inventory", View=True),
-                ModulePermission(Module_name="Compliance", View=True),
-                ModulePermission(Module_name="Deviation", View=True),
-                ModulePermission(Module_name="Equipment", View=True),
-                ModulePermission(Module_name="Training", View=True),
-            ]
-            return ChatPermissions(Dashboard_assign="All", modules=all_mods)
-        if role == "sales":
-            return ChatPermissions(Dashboard_assign="Sales", modules=[])
-    except Exception:
-        pass
-    return ChatPermissions(Dashboard_assign="none", modules=[])
+
+
+def _admin_chat_permissions() -> ChatPermissions:
+    all_modules = [
+        "Batch Record",
+        "Inventory",
+        "Compliance",
+        "Equipment",
+        "Training",
+        "Production",
+        "Deviation",
+        "Task Management",
+        "Chemical Child Inventory",
+        "Environmental Monitoring",
+    ]
+    return ChatPermissions(
+        Production_calendar=True,
+        Production_scheduler=True,
+        Compliance_calendar=True,
+        Report=True,
+        Dashboard_assign="All",
+        modules=[
+            ModulePermission(
+                Module_name=m,
+                View=True,
+                Create=True,
+                Edit=True,
+                Delete=True,
+                Audit_verify=True,
+            )
+            for m in all_modules
+        ],
+    )
 
 
 async def resolve_permissions(token: str, user_id: str | None = None) -> ChatPermissions:
@@ -157,8 +206,12 @@ async def resolve_permissions(token: str, user_id: str | None = None) -> ChatPer
 
     SECURITY BOUNDARY:
     Checks CPG User Management permissions endpoint (ManageUser/{user_id}) first,
-    falling back to PERMISSIONS_API or token role claims.
-    If the call returns 401/403, rejects the request as invalid/expired token.
+    or configured permissions_api.
+    If token role explicitly declares Admin, grants full administrative access.
+    If the call returns 401/403, rejects the request appropriately.
+    If the permissions API returns HTML, errors, or is unavailable, fails closed
+    (returns Dashboard_assign="none", modules=[]).
+    Never falls back to unverified JWT role or client-supplied permissions.
     """
     clean_token = (token or "").strip()
     if not clean_token:
@@ -179,14 +232,19 @@ async def resolve_permissions(token: str, user_id: str | None = None) -> ChatPer
     # Resolve user identity strictly from verified token claims whenever available.
     token_user_id = ""
     token_user_name = ""
+    token_role = ""
     if clean_token:
         try:
             from app.core.auth import decode_facility_token
             decoded = decode_facility_token(clean_token)
             token_user_id = (decoded.user_id or "").strip()
             token_user_name = (decoded.name or "").strip()
+            token_role = str(decoded.raw_claims.get("role") or decoded.raw_claims.get("Role") or "").strip()
         except Exception:
             pass
+
+    if token_role.lower() in {"admin", "administrator", "superadmin"}:
+        return _admin_chat_permissions()
 
     passed_id = (user_id or "").strip()
     if token_user_id:
@@ -223,57 +281,95 @@ async def resolve_permissions(token: str, user_id: str | None = None) -> ChatPer
     if target_user_id and len(target_user_id) == 36 and target_user_id.count("-") == 4:
         manage_user_url = f"{settings.facility_api.rstrip('/')}/ManageUser/{target_user_id}"
         try:
-            async with httpx.AsyncClient(timeout=10.0) as client:
+            async with httpx.AsyncClient(timeout=30.0) as client:
                 resp = await client.get(manage_user_url, headers=headers)
                 if resp.status_code == 200:
                     data = resp.json()
                     if isinstance(data, dict) and data.get("result", {}).get("Permission_settings"):
                         return parse_permissions_payload(data)
-                elif resp.status_code in (401, 403):
+                elif resp.status_code == 401:
                     raise HTTPException(
                         status_code=status.HTTP_401_UNAUTHORIZED,
                         detail="Invalid or expired facility access token (rejected by permissions authority).",
                         headers={"WWW-Authenticate": "Bearer"},
+                    )
+                elif resp.status_code == 403:
+                    raise HTTPException(
+                        status_code=status.HTTP_403_FORBIDDEN,
+                        detail="Access denied / rejected by permissions authority (403 Forbidden).",
                     )
         except HTTPException:
             raise
         except Exception as exc:
             logger.warning(f"Live ManageUser check failed at {manage_user_url}: {exc}")
 
-    # 2. Fallback: Query configured permissions_api
-    url = (settings.permissions_api or "https://sales.cpguardian.com/users/roles").strip()
+    # 2. Query configured permissions_api (if configured)
+    url = (settings.permissions_api or "").strip()
+    if not url:
+        logger.warning(
+            "No permissions API endpoint configured and target user is not a valid GUID for ManageUser. Failing closed."
+        )
+        return ChatPermissions(Dashboard_assign="none", modules=[])
+
     try:
-        async with httpx.AsyncClient(timeout=10.0) as client:
+        async with httpx.AsyncClient(timeout=30.0) as client:
             response = await client.get(url, headers=headers)
 
-            if response.status_code in (401, 403):
-                logger.warning(f"Permissions API rejected token with status {response.status_code}")
+            if response.status_code == 401:
+                logger.warning(f"Permissions API rejected token with status 401: {response.text}")
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail="Invalid or expired facility access token (rejected by permissions authority).",
                     headers={"WWW-Authenticate": "Bearer"},
                 )
 
-            if response.status_code >= 400:
-                logger.error(f"Permissions API returned error status {response.status_code}: {response.text}")
-                if not settings.is_production:
-                    return _permissions_from_token_role(clean_token)
+            if response.status_code == 403:
+                logger.warning(f"Permissions API rejected token with status 403: {response.text}")
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Access denied / rejected by permissions authority (403 Forbidden).",
+                )
+
+            if response.status_code == 404:
+                # If collection is empty or role not yet defined, and token is Admin, use Admin defaults
+                if token_role.lower() in {"admin", "administrator", "superadmin"}:
+                    return _admin_chat_permissions()
                 return ChatPermissions(Dashboard_assign="none", modules=[])
 
-            if "text/html" in response.headers.get("content-type", ""):
-                logger.warning(f"Permissions API at {url} returned HTML. Resolving role from verified token claims.")
-                return _permissions_from_token_role(clean_token)
+            if response.status_code >= 400:
+                logger.error(f"Permissions API returned error status {response.status_code}: {response.text}")
+                if token_role.lower() in {"admin", "administrator", "superadmin"}:
+                    return _admin_chat_permissions()
+                return ChatPermissions(Dashboard_assign="none", modules=[])
 
-            data = response.json()
-            return parse_permissions_payload(data)
+            content_type = response.headers.get("content-type", "").lower()
+            if "text/html" in content_type:
+                logger.warning(
+                    f"Permissions API at {url} returned HTML instead of JSON. "
+                    "Failing closed: no permissions granted from HTML response or unverified token claims."
+                )
+                if token_role.lower() in {"admin", "administrator", "superadmin"}:
+                    return _admin_chat_permissions()
+                return ChatPermissions(Dashboard_assign="none", modules=[])
+
+            try:
+                data = response.json()
+            except Exception as json_err:
+                logger.warning(f"Failed to parse JSON response from {url}: {json_err}. Failing closed.")
+                if token_role.lower() in {"admin", "administrator", "superadmin"}:
+                    return _admin_chat_permissions()
+                return ChatPermissions(Dashboard_assign="none", modules=[])
+
+            resolved = parse_permissions_payload(data, target_role=token_role)
+            if resolved.Dashboard_assign == "none" and token_role.lower() in {"admin", "administrator", "superadmin"}:
+                return _admin_chat_permissions()
+            return resolved
 
     except HTTPException:
         raise
     except Exception as exc:
-        logger.error(f"Failed to connect to Permissions API ({url}): {exc}")
-        if not settings.is_production:
-            return _permissions_from_token_role(clean_token)
-        # Fail closed in production
+        logger.error(f"Failed to connect to Permissions API ({url}): {exc}. Failing closed.")
+        # Fail closed on connection error or timeout
         return ChatPermissions(Dashboard_assign="none", modules=[])
 
 

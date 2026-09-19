@@ -1,0 +1,2597 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/v1/AsepticProcess",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "AsepticProcess"
+    ],
+    "parameters": [
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "pageSize",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "sorting",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "sortproperty",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "Name",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Status",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/AsepticProcess",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "AsepticProcess"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/AsepticProcess/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "AsepticProcess"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/AsepticProcess/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "AsepticProcess"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/AsepticProcess/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "AsepticProcess"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/ComplianceCalendar",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ComplianceCalendar"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/ComplianceCalendar",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ComplianceCalendar"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/EnvironmentalMonitoring",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "EnvironmentalMonitoring"
+    ],
+    "parameters": [
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "pageSize",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "sorting",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "sortproperty",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Facility",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Location_name",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      {
+        "name": "Requested_date",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/EnvironmentalMonitoring",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "EnvironmentalMonitoring"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/EnvironmentalMonitoring/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "EnvironmentalMonitoring"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/EnvironmentalMonitoring/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "EnvironmentalMonitoring"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/EnvironmentalMonitoring/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "EnvironmentalMonitoring"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/EnvironmentalMonitoring/BatchById/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "EnvironmentalMonitoring"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/EnvironmentalMonitoring/EMByLocationId",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "EnvironmentalMonitoring"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/EnvironmentalMonitoring/GetEMByBatchLocation/{batchId}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "EnvironmentalMonitoring"
+    ],
+    "parameters": [
+      {
+        "name": "batchId",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/Equipment",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Equipment"
+    ],
+    "parameters": [
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "pageSize",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "sorting",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "sortproperty",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "Name",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Location",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Serial_number",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Classification",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Status",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/Equipment",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Equipment"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/Equipment/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Equipment"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/Equipment/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Equipment"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/Equipment/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Equipment"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/Equipment/MoveEquipment/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Equipment"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/Equipment/CopyEquipment/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Equipment"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/Equipment/GetSamplingLocation/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Equipment"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/Facility",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Facility"
+    ],
+    "parameters": [
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "pageSize",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "sorting",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "Name",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Status",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/Facility",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Facility"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/Facility/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Facility"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/Facility/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Facility"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/Facility/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Facility"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/Facility/CopyFacility",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Facility"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/FacilityCalendar",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "FacilityCalendar"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/FacilityCalendar/filtering",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "FacilityCalendar"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/Location",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Location"
+    ],
+    "parameters": [
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "pageSize",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "sorting",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "Name",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Facility_name",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Pressure_type",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Date_of_last_certification",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Iso_classification",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Status",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/Location",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Location"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/Location/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Location"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/Location/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Location"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/Location/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Location"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/Location/CopyLocation/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Location"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/Location/GetSamplingLocation/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Location"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/MaintenanceRequest",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "MaintenanceRequest"
+    ],
+    "parameters": [
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "pageSize",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "sorting",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "sortproperty",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "Request_name",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Request_priority",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Request_date",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Request_on",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Request_status",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Request_owner",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/MaintenanceRequest",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "MaintenanceRequest"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/MaintenanceRequest/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "MaintenanceRequest"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/MaintenanceRequest/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "MaintenanceRequest"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/MaintenanceRequest/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "MaintenanceRequest"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/Notification",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Notification"
+    ],
+    "parameters": [
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "pageSize",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "sorting",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "sortProperty",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "date",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "moduleType",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "priority",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "isViewed",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/Notification/{tenentId},{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Notification"
+    ],
+    "parameters": [
+      {
+        "name": "tenentId",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/Notification/{tenentId},{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Notification"
+    ],
+    "parameters": [
+      {
+        "name": "tenentId",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/Notification/GetNotificationAsync/{tenentId},{userId}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Notification"
+    ],
+    "parameters": [
+      {
+        "name": "tenentId",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "userId",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/Notification/GetNotificationCountAsync/{tenentId},{userId}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Notification"
+    ],
+    "parameters": [
+      {
+        "name": "tenentId",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "userId",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/Notification/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Notification"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/PersonnelMonitoring",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "PersonnelMonitoring"
+    ],
+    "parameters": [
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "pageSize",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "sorting",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "sortproperty",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Name",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Status",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/PersonnelMonitoring",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "PersonnelMonitoring"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/PersonnelMonitoring/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "PersonnelMonitoring"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/PersonnelMonitoring/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "PersonnelMonitoring"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/PersonnelMonitoring/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "PersonnelMonitoring"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/PersonnelMonitoring/BatchById/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "PersonnelMonitoring"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/PersonnelMonitoring/PMByOperatorId/{batchId}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "PersonnelMonitoring"
+    ],
+    "parameters": [
+      {
+        "name": "batchId",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/PersonnelMonitoring/GetPMByBatchOperator",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "PersonnelMonitoring"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/ReleaseManagement",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ReleaseManagement"
+    ],
+    "parameters": [
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "pageSize",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "sorting",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "sortproperty",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Lot_number",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Batch_date",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Master_formula",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Requestor_name",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Quantity",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Status",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/ReleaseManagement/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ReleaseManagement"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/ReleaseManagement/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ReleaseManagement"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/TaskManagement",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "TaskManagement"
+    ],
+    "parameters": [
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "pageSize",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "sorting",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "sortproperty",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Task_assignee",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      {
+        "name": "Task_owner",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Module_type",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Module_info",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Task_date",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Priority",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Status",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/TaskManagement",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "TaskManagement"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/TaskManagement/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "TaskManagement"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/TaskManagement/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "TaskManagement"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/TaskManagement/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "TaskManagement"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/TaskManagement/GetModuleDetails/{moduleCode}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "TaskManagement"
+    ],
+    "parameters": [
+      {
+        "name": "moduleCode",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/TaskManagement/GetQuickFindModuleDetails/{moduleCode},{searchKey}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "TaskManagement"
+    ],
+    "parameters": [
+      {
+        "name": "moduleCode",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "searchKey",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/TaskManagement/GetTaskListByAssigneeId/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "TaskManagement"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/TaskManagement/GetTaskCountByAssigneeId/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "TaskManagement"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/Training",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Training"
+    ],
+    "parameters": [
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "pageSize",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "sorting",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "sortproperty",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Training_classification",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Name",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/Training",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Training"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/Training/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Training"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/Training/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Training"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/Training/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Training"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/Training/TrainingDetails",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Training"
+    ],
+    "parameters": [
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "pageSize",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "sorting",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      {
+        "name": "Training_classification",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      },
+      {
+        "name": "Training_detail",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/Training/TrainingDetails",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Training"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/Training/TrainingDetails/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Training"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "type",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/Training/TrainingDetails/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Training"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/Training/TrainingDetails/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "Training"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  }
+]

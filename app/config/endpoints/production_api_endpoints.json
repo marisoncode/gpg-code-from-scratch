@@ -1,0 +1,2913 @@
+[
+  {
+    "method": "POST",
+    "path": "/api/BatchCoverSheet/GenerateBatchCoverSheet",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "BatchCoverSheet"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/BatchRecord",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "BatchRecord"
+    ],
+    "parameters": [
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "nullable": true
+        }
+      },
+      {
+        "name": "pageSize",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "nullable": true
+        }
+      },
+      {
+        "name": "sorting",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "nullable": true
+        }
+      },
+      {
+        "name": "sortproperty",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Lot_number",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Requestor_name",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "MFR_name",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Status",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Master_formula",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Batch_date",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Is_child_batch",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Is_master_batch",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/BatchRecord",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "BatchRecord"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/BatchRecord/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "BatchRecord"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/BatchRecord/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "BatchRecord"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/BatchRecord/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "BatchRecord"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/BatchRecord/GetLotByDate",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "BatchRecord"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/BatchRecord/GetMasterRecord",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "BatchRecord"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/BatchRecord/UpdateBatchProcess/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "BatchRecord"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/BatchRecord/GetBatchCaseList",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "BatchRecord"
+    ],
+    "parameters": [
+      {
+        "name": "casePerContainer",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      },
+      {
+        "name": "actualYield",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/BatchRecord/GenerateLabel",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "BatchRecord"
+    ],
+    "parameters": [
+      {
+        "name": "batchCaseUnitId",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/BatchRecord/AddLotDetails",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "BatchRecord"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/BatchRecord/GetOperatorList",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "BatchRecord"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/BatchRecord/GetSnapUrlList",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "BatchRecord"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/BatchRecord/UpdateBatchUnits/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "BatchRecord"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/BatchRecord/AssignedUserNotification",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "BatchRecord"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/BatchRecord/GetEquipments",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "BatchRecord"
+    ],
+    "parameters": [
+      {
+        "name": "barcode",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/BatchRecord/ChangeChemicalLot",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "BatchRecord"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/BatchRecord/ChangeComponentLot",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "BatchRecord"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/BatchRecord/GetChildInventory/{kind}/{Master_id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "BatchRecord"
+    ],
+    "parameters": [
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "nullable": true
+        }
+      },
+      {
+        "name": "pageSize",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "nullable": true
+        }
+      },
+      {
+        "name": "sorting",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Master_id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      },
+      {
+        "name": "kind",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Lot_number",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Requestor_name",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "MFR_name",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Status",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Master_formula",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/BatchRecord/GetBatchDetails/{barcode}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "BatchRecord"
+    ],
+    "parameters": [
+      {
+        "name": "barcode",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/BatchRecord/GetMFR",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "BatchRecord"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/BatchRecord/GetChildBatches/{mfrId}/{quantity}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "BatchRecord"
+    ],
+    "parameters": [
+      {
+        "name": "mfrId",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      },
+      {
+        "name": "quantity",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/BatchRecord/GetMFRForMasterBatch/{mfrId}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "BatchRecord"
+    ],
+    "parameters": [
+      {
+        "name": "mfrId",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/BatchRecord/EditInventoryQuantity/{type}/{typeId}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "BatchRecord"
+    ],
+    "parameters": [
+      {
+        "name": "type",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      },
+      {
+        "name": "typeId",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/BatchRecord/CreateCustomLabel",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "BatchRecord"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/ChemicalChildInventory",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ChemicalChildInventory"
+    ],
+    "parameters": [
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "nullable": true
+        }
+      },
+      {
+        "name": "pageSize",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "nullable": true
+        }
+      },
+      {
+        "name": "sorting",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Master_id",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Sku",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Lot_number",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Expire_date",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Initial_quantity",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Quantity_onhand",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Received_date",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Is_expired",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Status",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Is_active",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/ChemicalChildInventory",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ChemicalChildInventory"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/ChemicalChildInventory/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ChemicalChildInventory"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/ChemicalChildInventory/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ChemicalChildInventory"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/ChemicalChildInventory/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ChemicalChildInventory"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/ChemicalChildInventory/AdjustQuantity/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ChemicalChildInventory"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/ChemicalInventory",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ChemicalInventory"
+    ],
+    "parameters": [
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "nullable": true
+        }
+      },
+      {
+        "name": "pageSize",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "nullable": true
+        }
+      },
+      {
+        "name": "sorting",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Name",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Strength",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Api",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/ChemicalInventory",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ChemicalInventory"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/ChemicalInventory/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ChemicalInventory"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/ChemicalInventory/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ChemicalInventory"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/ChemicalInventory/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ChemicalInventory"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/ComponentChildInventory",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ComponentChildInventory"
+    ],
+    "parameters": [
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "nullable": true
+        }
+      },
+      {
+        "name": "pageSize",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "nullable": true
+        }
+      },
+      {
+        "name": "sorting",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Master_id",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Sku",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Lot_number",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Expire_date",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Cost_per_container",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Cost_per_unit",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Quantity_onhand",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Received_date",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Is_expired",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Status",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/ComponentChildInventory",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ComponentChildInventory"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/ComponentChildInventory/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ComponentChildInventory"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/ComponentChildInventory/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ComponentChildInventory"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/ComponentChildInventory/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ComponentChildInventory"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/ComponentChildInventory/AdjustQuantity/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ComponentChildInventory"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/ComponentInventory",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ComponentInventory"
+    ],
+    "parameters": [
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "nullable": true
+        }
+      },
+      {
+        "name": "pageSize",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "nullable": true
+        }
+      },
+      {
+        "name": "sorting",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Name",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/ComponentInventory",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ComponentInventory"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/ComponentInventory/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ComponentInventory"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/ComponentInventory/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ComponentInventory"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/ComponentInventory/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ComponentInventory"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/FileUpload",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "FileUpload"
+    ],
+    "parameters": [
+      {
+        "name": "referenceType",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/FileUpload/{fileName}/{id}/{recordId}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "FileUpload"
+    ],
+    "parameters": [
+      {
+        "name": "fileName",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      },
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      },
+      {
+        "name": "recordId",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/FileUpload/{fileName}/{id}/{recordId}/{childId}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "FileUpload"
+    ],
+    "parameters": [
+      {
+        "name": "fileName",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      },
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      },
+      {
+        "name": "recordId",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      },
+      {
+        "name": "childId",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/FinalProduct",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "FinalProduct"
+    ],
+    "parameters": [
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "nullable": true
+        }
+      },
+      {
+        "name": "pageSize",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "nullable": true
+        }
+      },
+      {
+        "name": "sorting",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "nullable": true
+        }
+      },
+      {
+        "name": "sortproperty",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Name",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Sku",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Lot_number",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Ndc",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/FinalProduct",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "FinalProduct"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/FinalProduct/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "FinalProduct"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/FinalProduct/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "FinalProduct"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/FinalProduct/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "FinalProduct"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/FinalProductChild",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "FinalProductChild"
+    ],
+    "parameters": [
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "nullable": true
+        }
+      },
+      {
+        "name": "pageSize",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "nullable": true
+        }
+      },
+      {
+        "name": "sorting",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "nullable": true
+        }
+      },
+      {
+        "name": "sortproperty",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Master_id",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Name",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Sku",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Lot_number",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Available_quantity",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Total_cost",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/FinalProductChild",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "FinalProductChild"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/FinalProductChild/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "FinalProductChild"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/FinalProductChild/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "FinalProductChild"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/FinalProductChild/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "FinalProductChild"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/FinalProductChild/CaseLabelGeneration/{finalUnitId}/ {lotNumber}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "FinalProductChild"
+    ],
+    "parameters": [
+      {
+        "name": "finalUnitId",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      },
+      {
+        "name": "lotNumber",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/MasterFormulationRecord",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "MasterFormulationRecord"
+    ],
+    "parameters": [
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "nullable": true
+        }
+      },
+      {
+        "name": "pageSize",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "nullable": true
+        }
+      },
+      {
+        "name": "sorting",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "nullable": true
+        }
+      },
+      {
+        "name": "sortProperty",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Name",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Status",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Method",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Is_cms",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "Is_active",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/MasterFormulationRecord",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "MasterFormulationRecord"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/MasterFormulationRecord/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "MasterFormulationRecord"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/MasterFormulationRecord/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "MasterFormulationRecord"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/MasterFormulationRecord/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "MasterFormulationRecord"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/MasterFormulationRecord/GetEquipment/{locationId}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "MasterFormulationRecord"
+    ],
+    "parameters": [
+      {
+        "name": "locationId",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/MasterFormulationRecord/NDC/{Ndc}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "MasterFormulationRecord"
+    ],
+    "parameters": [
+      {
+        "name": "Ndc",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/MasterFormulationRecord/Copy/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "MasterFormulationRecord"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/MasterFormulationRecord/CMS/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "MasterFormulationRecord"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/MasterFormulationRecord/SKU/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "MasterFormulationRecord"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/MasterFormulationRecord/GenerateMFRpdf",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "MasterFormulationRecord"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/MasterFormulationRecord/PartialActiveConfirmation/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "MasterFormulationRecord"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      },
+      {
+        "name": "isActive",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "boolean"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/ProductionCalendar",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ProductionCalendar"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/ProductionScheduler/GetOrderListWithFinalProduct",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ProductionScheduler"
+    ],
+    "parameters": [
+      {
+        "name": "fromDate",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "toDate",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "finalProductId",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "facilityName",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "startDate",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "endDate",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/ProductionScheduler/GetOrderListWithInvoice",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ProductionScheduler"
+    ],
+    "parameters": [
+      {
+        "name": "fromDate",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "toDate",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "finalProductId",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "facilityName",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      },
+      {
+        "name": "orderType",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "default": "",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/ProductionScheduler/GetLotNumberForBatch",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ProductionScheduler"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/ProductionScheduler/GetMasterIdForBatch",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ProductionScheduler"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/ProductionScheduler/GetMaterialDetailsByProduct/{reportType}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ProductionScheduler"
+    ],
+    "parameters": [
+      {
+        "name": "reportType",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/ScaleMonitor/GetCollectionList",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ScaleMonitor"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/ScaleMonitor/Login",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ScaleMonitor"
+    ],
+    "parameters": [],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/ScaleMonitor/{barcode}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ScaleMonitor"
+    ],
+    "parameters": [
+      {
+        "name": "barcode",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/ScaleMonitor/{id}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ScaleMonitor"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/ScaleMonitor/VerifyCode/{secretCode}",
+    "summary": "",
+    "description": "",
+    "operationId": "",
+    "tags": [
+      "ScaleMonitor"
+    ],
+    "parameters": [
+      {
+        "name": "secretCode",
+        "in": "path",
+        "required": true,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      },
+      {
+        "name": "type",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "string",
+          "nullable": true
+        }
+      },
+      {
+        "name": "moduleId",
+        "in": "query",
+        "required": false,
+        "description": "",
+        "schema": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    ],
+    "responses": [
+      "200"
+    ]
+  }
+]

@@ -23,12 +23,16 @@ import inspect
 import logging
 from typing import Any
 
-from app.services import audit_service, facility_api_service
+from app.clients.base_client import _safe_fetch_items
+from app.clients.production_client import ProductionClient
+from app.services import audit_service
 from app.services.analytics_service import calculate_risk_score
 from app.services.capabilities import ChatPermissions
 from app.services.permissions_service import verify_resource_permission
 
 logger = logging.getLogger(__name__)
+
+_prod_client = ProductionClient()
 
 # Mandatory explicit advisory status string (SRS Section 7.3 & 19)
 ADVISORY_STATUS_LABEL = "DRAFT — requires authorized human approval"
@@ -64,32 +68,18 @@ async def recommend_batch_configuration(
     qty = float(target_quantity or 1000.0)
 
     # ── STEP B: RESOLVE PRODUCT AND MASTER FORMULATION ────────────────────────
-    # Attempt to derive product specification from historical batch executions
+    # Attempt to derive product specification from historical batch executions directly from Production API
     past_batches: list[dict[str, Any]] = []
     try:
-        batches_container = facility_api_service._get_business_container("batches")
-        res = batches_container.query_items(
-            query="SELECT TOP 20 * FROM c WHERE c.product = @prod OR c.product_id = @prod ORDER BY c.created_at DESC",
-            parameters=[{"name": "@prod", "value": clean_product}],
-            enable_cross_partition_query=True,
-        )
-        if inspect.isawaitable(res):
-            res = await res
-        past_batches = list(res)
+        code, all_batches = await _prod_client.get_batches(limit=50)
+        if isinstance(all_batches, list):
+            past_batches = [
+                b for b in all_batches
+                if b.get("product") == clean_product or b.get("product_id") == clean_product
+            ][:20]
     except Exception as exc:
-        logger.warning(f"Error querying batches container for {clean_product}: {exc}")
+        logger.warning(f"Error querying batches for {clean_product}: {exc}")
         past_batches = []
-
-    if not past_batches:
-        raw_batches = facility_api_service._get_business_items("batches")
-        if inspect.isawaitable(raw_batches):
-            all_batches = await raw_batches
-        else:
-            all_batches = raw_batches if isinstance(raw_batches, list) else []
-        past_batches = [
-            b for b in all_batches
-            if b.get("product") == clean_product or b.get("product_id") == clean_product
-        ][:20]
 
     has_historical_data = bool(past_batches)
 
@@ -124,66 +114,30 @@ async def recommend_batch_configuration(
     }
 
     # ── STEP C: DETERMINE REQUIRED RESOURCES ──────────────────────────────────
-    # Candidate pools from facility records
+    # Candidate pools from live facility microservices
     raw_material_pool: list[dict[str, Any]] = []
     equipment_pool: list[dict[str, Any]] = []
     operator_pool: list[dict[str, Any]] = []
 
     try:
-        mat_c = facility_api_service._get_business_container("materials")
-        res_m = mat_c.query_items(query="SELECT TOP 20 * FROM c", enable_cross_partition_query=True)
-        if inspect.isawaitable(res_m):
-            res_m = await res_m
-        raw_material_pool = list(res_m)
+        mats = await _safe_fetch_items("materials")
+        raw_material_pool = mats[:20] if isinstance(mats, list) else []
     except Exception:
         raw_material_pool = []
-    if not raw_material_pool:
-        try:
-            raw_mats = facility_api_service._get_business_items("materials")
-            if inspect.isawaitable(raw_mats):
-                raw_material_pool = (await raw_mats)[:20]
-            else:
-                raw_material_pool = (raw_mats or [])[:20]
-        except Exception:
-            raw_material_pool = []
 
     try:
-        eq_c = facility_api_service._get_business_container("equipment")
-        res_e = eq_c.query_items(query="SELECT TOP 20 * FROM c", enable_cross_partition_query=True)
-        if inspect.isawaitable(res_e):
-            res_e = await res_e
-        equipment_pool = list(res_e)
+        eqs = await _safe_fetch_items("equipment")
+        equipment_pool = eqs[:20] if isinstance(eqs, list) else []
     except Exception:
         equipment_pool = []
-    if not equipment_pool:
-        try:
-            raw_eq = facility_api_service._get_business_items("equipment")
-            if inspect.isawaitable(raw_eq):
-                equipment_pool = (await raw_eq)[:20]
-            else:
-                equipment_pool = (raw_eq or [])[:20]
-        except Exception:
-            equipment_pool = []
 
     try:
-        tr_c = facility_api_service._get_business_container("training")
-        res_t = tr_c.query_items(query="SELECT TOP 20 * FROM c", enable_cross_partition_query=True)
-        if inspect.isawaitable(res_t):
-            res_t = await res_t
-        operator_pool = list(res_t)
+        trs = await _safe_fetch_items("training")
+        operator_pool = trs[:20] if isinstance(trs, list) else []
     except Exception:
         operator_pool = []
-    if not operator_pool:
-        try:
-            raw_tr = facility_api_service._get_business_items("training")
-            if inspect.isawaitable(raw_tr):
-                operator_pool = (await raw_tr)[:20]
-            else:
-                operator_pool = (raw_tr or [])[:20]
-        except Exception:
-            operator_pool = []
 
-    # If container returned no items (e.g. in mock test with custom data), seed defaults from past batches
+    # Fallback to past batch metadata if candidate pool is empty
     if not raw_material_pool and past_batches:
         raw_material_pool = [{"id": f"RM-{m}", "lot_number": f"RM-{m}", "quality_status": "RELEASED"} for b in past_batches for m in (b.get("materials") or [])]
     if not equipment_pool and past_batches:

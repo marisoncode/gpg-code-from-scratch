@@ -20,11 +20,16 @@ import os
 from pathlib import Path
 from typing import Any
 
-from app.services import facility_api_service
+from app.clients.base_client import normalize_cpg_record
+from app.clients.compliance_client import ComplianceClient
+from app.clients.production_client import ProductionClient
 from app.services.capabilities import ChatPermissions
 from app.services.permissions_service import verify_resource_permission
 
 logger = logging.getLogger(__name__)
+
+_prod_client = ProductionClient()
+_comp_client = ComplianceClient()
 
 # Default config path
 _CONFIG_FILE_PATH = Path(__file__).resolve().parent.parent / "config" / "risk_weights.json"
@@ -196,26 +201,21 @@ async def find_similar_batches(
     if not clean_id:
         return {"error": "batch_id parameter is required.", "status": "missing_parameter"}
 
-    # Fetch target batch
-    target_res = facility_api_service.get_batch_by_id(clean_id, permissions=permissions)
-    if inspect.isawaitable(target_res):
-        target_res = await target_res
-    if target_res.get("status") != "found":
+    # Fetch target batch directly from Production API
+    code, target_raw = await _prod_client.get_batch_by_id(clean_id)
+    if code != 200 or not target_raw:
         return {
             "error": f"Target batch {clean_id} is unavailable or not found in CPG data.",
             "status": "unavailable",
             "record_id": clean_id,
         }
 
-    target_batch = target_res.get("batch", {})
+    target_batch = normalize_cpg_record(target_raw)
 
-    # Fetch candidate batches from downstream service collection
+    # Fetch candidate batches directly from Production API
     try:
-        raw_batches = facility_api_service._get_business_items("batches")
-        if inspect.isawaitable(raw_batches):
-            all_batches = await raw_batches
-        else:
-            all_batches = raw_batches if isinstance(raw_batches, list) else []
+        code_all, all_batches = await _prod_client.get_batches(limit=50)
+        all_batches = all_batches if isinstance(all_batches, list) else []
         prod = target_batch.get("product")
         candidates = [
             b for b in all_batches
@@ -302,16 +302,14 @@ async def calculate_risk_score(
     # Resolve batch record or proposed configuration
     if isinstance(batch_id_or_config, str):
         clean_id = batch_id_or_config.strip()
-        batch_res = facility_api_service.get_batch_by_id(clean_id, permissions=permissions)
-        if inspect.isawaitable(batch_res):
-            batch_res = await batch_res
-        if batch_res.get("status") != "found":
+        code, batch_raw = await _prod_client.get_batch_by_id(clean_id)
+        if code != 200 or not batch_raw:
             return {
                 "error": f"Target batch {clean_id} is unavailable for risk scoring.",
                 "status": "unavailable",
                 "record_id": clean_id,
             }
-        batch_data = batch_res.get("batch", {})
+        batch_data = normalize_cpg_record(batch_raw)
         target_name = clean_id
     else:
         batch_data = dict(batch_id_or_config or {})
@@ -327,10 +325,8 @@ async def calculate_risk_score(
     mat_defective = False
     for m in materials:
         if m:
-            m_res = facility_api_service.get_material_lot_trace(str(m), permissions=permissions)
-            if inspect.isawaitable(m_res):
-                m_res = await m_res
-            mat_item = m_res.get("material_lot", {})
+            code_m, mat_raw = await _prod_client.get_material_inventory(str(m))
+            mat_item = normalize_cpg_record(mat_raw) if isinstance(mat_raw, dict) else {}
             m_status = str(mat_item.get("quality_status") or mat_item.get("status") or "").upper()
             if m_status in {"REJECTED", "DEFECTIVE", "OOS", "RECALLED"}:
                 mat_defective = True
@@ -349,10 +345,8 @@ async def calculate_risk_score(
     eq_overdue = False
     for eq_id in equipments:
         if eq_id:
-            eq_res = facility_api_service.get_equipment_status(str(eq_id), permissions=permissions)
-            if inspect.isawaitable(eq_res):
-                eq_res = await eq_res
-            eq_item = eq_res.get("equipment", {})
+            code_e, eq_raw = await _comp_client.get_equipment(str(eq_id))
+            eq_item = normalize_cpg_record(eq_raw) if isinstance(eq_raw, dict) else {}
             pm_stat = str(eq_item.get("pm_status") or eq_item.get("status") or "").upper()
             if pm_stat in {"OVERDUE", "EXPIRED", "NON_COMPLIANT"}:
                 eq_overdue = True
@@ -373,10 +367,8 @@ async def calculate_risk_score(
     op_unqualified = False
     for op_id in operators:
         if op_id:
-            op_res = facility_api_service.get_operator_training_status(str(op_id), permissions=permissions)
-            if inspect.isawaitable(op_res):
-                op_res = await op_res
-            records = op_res.get("training_records") or []
+            code_o, op_raw = await _comp_client.get_training_by_operator(str(op_id))
+            records = op_raw if isinstance(op_raw, list) else ([op_raw] if op_raw else [])
             # Check for any expired or incomplete status
             for rec in records:
                 r_stat = str(rec.get("status") or "").upper()
@@ -471,13 +463,10 @@ async def detect_trends(
     if not clean_prod:
         return {"error": "product_id parameter is required.", "status": "missing_parameter"}
 
-    # Fetch batch population for product from downstream service collection
+    # Fetch batch population directly from Production API
     try:
-        raw_batches = facility_api_service._get_business_items("batches")
-        if inspect.isawaitable(raw_batches):
-            all_batches = await raw_batches
-        else:
-            all_batches = raw_batches if isinstance(raw_batches, list) else []
+        code_b, all_batches = await _prod_client.get_batches(limit=50)
+        all_batches = all_batches if isinstance(all_batches, list) else []
         batches = [
             b for b in all_batches
             if b.get("product") == clean_prod or b.get("product_id") == clean_prod

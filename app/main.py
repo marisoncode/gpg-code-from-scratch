@@ -3,14 +3,26 @@ import os
 from contextlib import asynccontextmanager
 from typing import Any
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.chat import router as chat_router
+from app.api.domain_endpoints import (
+    analytics_router,
+    compliance_router,
+    facility_router,
+    genealogy_router,
+    production_router,
+    tools_router,
+)
+from app.api.summary import router as summary_router
 from app.core.config import settings
 from app.core.database import close_mongo, init_mongo
-from app.services.facility_api_service import close_http_client, init_http_client
-
+from app.clients.base_client import close_http_client, init_http_client
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
 logger = logging.getLogger(__name__)
 
 
@@ -53,7 +65,19 @@ def get_cors_origins(settings_obj: Any = None) -> list[str]:
         frontend = (getattr(cfg, "frontend_origin", "") or os.getenv("FRONTEND_ORIGIN", "")).strip()
         return [frontend] if frontend else []
     
-    dev_origins = ["http://localhost:4200", "http://127.0.0.1:4200", "http://localhost:3000"]
+    dev_origins = [
+        "http://localhost:4200",
+        "http://127.0.0.1:4200",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:5500",
+        "http://127.0.0.1:5500",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+        "null",
+    ]
     frontend = (getattr(cfg, "frontend_origin", "") or os.getenv("FRONTEND_ORIGIN", "")).strip()
     if frontend and frontend not in dev_origins:
         dev_origins.append(frontend)
@@ -80,7 +104,7 @@ async def lifespan(_: FastAPI):
 def create_app() -> FastAPI:
     app_instance = FastAPI(
         title="CPG AI Backend",
-        description="AI backend for CareOpsRx Facility chatbot",
+        description="AI backend for CPG AI Facility chatbot",
         version="1.0.0",
         lifespan=lifespan,
     )
@@ -98,10 +122,28 @@ def create_app() -> FastAPI:
     app_instance.add_middleware(
         CORSMiddleware,
         allow_origins=cors_origins,
+        allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$" if env != "production" else None,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    @app_instance.middleware("http")
+    async def extract_cpg_headers_middleware(request: Request, call_next):
+        col_id = (
+            request.headers.get("collectionid")
+            or request.headers.get("x-collection-id")
+            or request.headers.get("collection_id")
+            or request.headers.get("x-tenant-id")
+            or request.headers.get("tenantid")
+            or request.headers.get("x-facility-id")
+            or request.headers.get("facilityid")
+            or ""
+        ).strip()
+        if col_id:
+            from app.clients.base_client import _request_collection_id
+            _request_collection_id.set(col_id)
+        return await call_next(request)
 
     @app_instance.get("/health")
     async def health():
@@ -112,17 +154,35 @@ def create_app() -> FastAPI:
 
     # Documented industry-standard API prefix: /v1
     app_instance.include_router(chat_router, prefix="/v1")
+    app_instance.include_router(summary_router, prefix="/v1")
+    app_instance.include_router(production_router)
+    app_instance.include_router(compliance_router)
+    app_instance.include_router(genealogy_router)
+    app_instance.include_router(analytics_router)
+    app_instance.include_router(tools_router)
+    app_instance.include_router(facility_router)
 
     # Backward-compatibility alias for unversioned clients (hidden from Swagger docs)
     app_instance.include_router(chat_router, include_in_schema=False)
+    app_instance.include_router(summary_router, include_in_schema=False)
 
     # ── OPENAI / OLLAMA COMPATIBILITY ROUTES (DEV-ONLY) ───────────────────────────
     # These routes exist specifically to support unauthenticated model discovery and
     # chat probing from local development tools (e.g. OpenWebUI, Chatbot UI, LibreChat)
-    # without requiring CareOpsRx JWT tokens or facility session credentials.
+    # without requiring CPG AI JWT tokens or facility session credentials.
     # In production, they are strictly excluded to prevent unauthenticated LLM cost/abuse
     # exposure, ensuring all production traffic routes through authenticated /chat endpoints.
     if env != "production":
+        @app_instance.get("/test-ui", include_in_schema=False)
+        async def test_ui():
+            from pathlib import Path
+            from fastapi.responses import FileResponse
+            ui_path = Path(__file__).parent.parent / "test_chat_ui.html"
+            if ui_path.exists():
+                return FileResponse(ui_path)
+            from fastapi import HTTPException
+            raise HTTPException(status_code=404, detail="test_chat_ui.html not found")
+
         @app_instance.get("/v1/models")
         @app_instance.get("/models")
         async def list_models():

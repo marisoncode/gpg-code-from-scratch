@@ -18,12 +18,12 @@ import httpx
 from openai import APIError, AsyncAzureOpenAI, AsyncOpenAI, AuthenticationError, RateLimitError
 
 from app.agent.prompts import SYSTEM_PROMPT
-from app.core.config import settings
-from app.services.capabilities import ChatPermissions
-from app.services.facility_api_service import (
+from app.ai import (
     PREDEFINED_TOOL_SCHEMAS,
     execute_predefined_tool,
 )
+from app.core.config import settings
+from app.services.capabilities import ChatPermissions
 
 logger = logging.getLogger(__name__)
 
@@ -217,101 +217,289 @@ async def _generate_openai_with_tools(
     if not _is_conversational_greeting(message):
         create_kwargs["tools"] = PREDEFINED_TOOL_SCHEMAS
 
+    functions_called: list[dict[str, Any]] = []
+    record_ids: list[str] = []
+    is_any_denied = False
+    denial_reason = None
+    data_source = ""
+    last_tool_data = None
+    completion = None
+
     try:
         completion = await client.chat.completions.create(**create_kwargs)
     except AuthenticationError as exc:
         raise AiAuthError(f"OpenAI authentication failed: {exc}") from exc
     except RateLimitError as exc:
-        raise AiRateLimitError(f"OpenAI rate limit / quota exceeded: {exc}") from exc
+        STOP_WORDS = {"record", "records", "details", "status", "info", "information", "summary", "dossier", "data", "es", "the", "a", "an", "is", "for", "number", "no", "id", "batch", "batches", "active"}
+        batch_candidates = re.findall(r'(?:batch|lot|record)(?:\s+(?:number|no|id|record|details))*[\s#:]*([A-Za-z0-9_-]+)', message, re.IGNORECASE)
+        b_id = None
+        for cand in batch_candidates:
+            cand_clean = cand.strip().strip("#:.,")
+            if cand_clean.lower() not in STOP_WORDS and len(cand_clean) >= 3 and any(c.isdigit() for c in cand_clean):
+                b_id = cand_clean
+                break
+
+        if not b_id:
+            standalone = re.findall(r'\b(\d{5,12}|[A-Za-z]{1,4}-\d{3,8}|[a-z_]+_\d{3,8})\b', message, re.IGNORECASE)
+            for cand in standalone:
+                cand_clean = cand.strip()
+                if cand_clean.lower() not in STOP_WORDS and any(c.isdigit() for c in cand_clean):
+                    b_id = cand_clean
+                    break
+
+        if b_id:
+            tool_res = await execute_predefined_tool("get_batch_by_id", {"batch_id": b_id}, permissions=permissions, token=token)
+            functions_called.append({"name": "get_batch_by_id", "parameters": {"batch_id": b_id}})
+            last_tool_data = tool_res
+            data_source = "production-api.cpguardian.com"
+        elif any(w in message.lower() for w in ("production", "throughput", "dashboard", "line", "batch", "batches")):
+            tool_res = await execute_predefined_tool("get_production_dashboard_data", {}, permissions=permissions, token=token)
+            functions_called.append({"name": "get_production_dashboard_data", "parameters": {}})
+            last_tool_data = tool_res
+            data_source = "facility-user-api.cpguardian.com"
+        elif any(w in message.lower() for w in ("compliance", "deviation", "qa", "calibration")):
+            tool_res = await execute_predefined_tool("get_compliance_dashboard_data", {}, permissions=permissions, token=token)
+            functions_called.append({"name": "get_compliance_dashboard_data", "parameters": {}})
+            last_tool_data = tool_res
+            data_source = "compliance-api.cpguardian.com"
+        else:
+            raise AiRateLimitError(f"OpenAI rate limit / quota exceeded: {exc}") from exc
     except Exception as exc:
         raise AiProviderError(f"OpenAI request failed: {exc}") from exc
     finally:
         await client.close()
 
-    choice = completion.choices[0]
-    msg = choice.message
-
-    # Check if the LLM requested a function call
-    if not msg.tool_calls:
-        return GenerationResult(text=(msg.content or "").strip())
-
-    functions_called: list[dict[str, Any]] = []
-    record_ids: list[str] = []
-    is_any_denied = False
-    denial_reason = None
-
-    messages.append(msg.to_dict() if hasattr(msg, "to_dict") else dict(msg))
-
     entity_type = ""
     traceability_chain = ""
     risk_config_version = ""
-    data_source = ""
+    final_text = ""
 
-    for tool_call in msg.tool_calls:
-        fn_name = tool_call.function.name
-        try:
-            fn_args = json.loads(tool_call.function.arguments)
-        except Exception:
-            fn_args = {}
+    if completion is not None:
+        choice = completion.choices[0]
+        msg = choice.message
 
-        functions_called.append({"name": fn_name, "parameters": fn_args})
+        # Check if the LLM requested a function call
+        if not msg.tool_calls:
+            return GenerationResult(text=(msg.content or "").strip())
 
-        # Execute safe predefined function with permissions and token forwarded
-        res = execute_predefined_tool(fn_name, fn_args, permissions=permissions, token=token)
-        if inspect.isawaitable(res):
-            tool_result = await res
-        else:
-            tool_result = res
-
-        res_data = tool_result.get("result") or {}
-        if isinstance(res_data, dict) and res_data.get("data_source"):
-            data_source = str(res_data.get("data_source"))
-            functions_called[-1]["data_source"] = data_source
-
-        if tool_result.get("status") == "permission_denied":
-            is_any_denied = True
-            denial_reason = tool_result.get("error")
-
-        t_entity, t_chain, t_records, t_config_ver = _extract_result_metadata(fn_name, fn_args, tool_result)
-        if t_entity and not entity_type:
-            entity_type = t_entity
-        if t_chain and not traceability_chain:
-            traceability_chain = t_chain
-        if t_config_ver and not risk_config_version:
-            risk_config_version = t_config_ver
-        for rid in t_records:
-            if rid not in record_ids:
-                record_ids.append(rid)
-
-        messages.append(
-            {
-                "role": "tool",
-                "tool_call_id": tool_call.id,
-                "content": json.dumps(tool_result),
+        # Build assistant message for OpenAI / Gemini compatibility
+        tool_calls_payload = []
+        for tc in msg.tool_calls:
+            tc_dict: dict[str, Any] = {
+                "id": tc.id,
+                "type": "function",
+                "function": {
+                    "name": tc.function.name,
+                    "arguments": tc.function.arguments,
+                },
             }
-        )
+            if hasattr(tc, "extra_content") and tc.extra_content:
+                tc_dict["extra_content"] = tc.extra_content
+            tool_calls_payload.append(tc_dict)
 
-    # Second call to let the LLM generate the final response with the retrieved data
-    client2 = _build_openai_client()
-    try:
-        final_completion = await client2.chat.completions.create(
-            model=model,
-            messages=messages,
-            temperature=0.2,
-            max_tokens=1024,
-        )
-        final_text = (final_completion.choices[0].message.content or "").strip()
-    except AuthenticationError as exc:
-        raise AiAuthError(f"OpenAI authentication failed: {exc}") from exc
-    except RateLimitError as exc:
-        raise AiRateLimitError(f"OpenAI rate limit / quota exceeded: {exc}") from exc
-    except Exception as exc:
-        raise AiProviderError(f"OpenAI request failed: {exc}") from exc
-    finally:
-        await client2.close()
+        assistant_msg = {
+            "role": "assistant",
+            "content": msg.content or None,
+            "tool_calls": tool_calls_payload,
+        }
+        messages.append(assistant_msg)
+
+        for tool_call in msg.tool_calls:
+            fn_name = tool_call.function.name
+            try:
+                fn_args = json.loads(tool_call.function.arguments)
+            except Exception:
+                fn_args = {}
+
+            functions_called.append({"name": fn_name, "parameters": fn_args})
+
+            # Execute safe predefined function with permissions and token forwarded
+            res = execute_predefined_tool(fn_name, fn_args, permissions=permissions, token=token)
+            if inspect.isawaitable(res):
+                tool_result = await res
+            else:
+                tool_result = res
+
+            last_tool_data = tool_result
+            res_data = tool_result.get("result") or {}
+            if isinstance(res_data, dict) and res_data.get("data_source"):
+                data_source = str(res_data.get("data_source"))
+                functions_called[-1]["data_source"] = data_source
+
+            if tool_result.get("status") == "permission_denied":
+                is_any_denied = True
+                denial_reason = tool_result.get("error")
+
+            t_entity, t_chain, t_records, t_config_ver = _extract_result_metadata(fn_name, fn_args, tool_result)
+            if t_entity and not entity_type:
+                entity_type = t_entity
+            if t_chain and not traceability_chain:
+                traceability_chain = t_chain
+            if t_config_ver and not risk_config_version:
+                risk_config_version = t_config_ver
+            for rid in t_records:
+                if rid not in record_ids:
+                    record_ids.append(rid)
+
+            messages.append(
+                {
+                    "role": "tool",
+                    "tool_call_id": tool_call.id,
+                    "content": json.dumps(tool_result),
+                }
+            )
+
+        # Second call to let the LLM generate the final response with the retrieved data
+        client2 = _build_openai_client()
+        try:
+            final_completion = await client2.chat.completions.create(
+                model=model,
+                messages=messages,
+                temperature=0.2,
+                max_tokens=1024,
+            )
+            final_text = (final_completion.choices[0].message.content or "").strip()
+        except AuthenticationError as exc:
+            raise AiAuthError(f"OpenAI authentication failed: {exc}") from exc
+        except RateLimitError as exc:
+            logger.warning("LLM second pass hit rate limit / quota, falling back to deterministic formatter: %s", exc)
+        except Exception as exc:
+            logger.warning("LLM second pass call failed: %s", exc)
+        finally:
+            await client2.close()
+
+    # Guarantee: If LLM returned empty string, hit rate limit, or had a parsing glitch, format the real data directly
+    if not final_text and last_tool_data:
+        # Unpack executor envelope if present: {"function": ..., "result": ...}
+        tool_payload = last_tool_data
+        if isinstance(tool_payload, dict) and "result" in tool_payload and isinstance(tool_payload["result"], dict):
+            tool_payload = tool_payload["result"]
+
+        # 1. Check if tool returned not found or error
+        if isinstance(tool_payload, dict) and (
+            tool_payload.get("found") is False
+            or tool_payload.get("status") == "not_found"
+            or "error" in tool_payload
+        ):
+            target = tool_payload.get("record_id") or "requested"
+            err_detail = tool_payload.get("error") or f"Batch '{target}' was not found in the production database."
+            final_text = (
+                f"### Batch Record Not Found\n\n"
+                f"{err_detail}\n\n"
+                f"- **Status:** `Not Found`\n"
+                f"- **Queried Microservice:** `https://production-api.cpguardian.com/api/BatchRecord`\n\n"
+                f"Please verify the Batch Number or Lot Number and confirm it exists in the active tenant."
+            )
+        else:
+            # 2. Extract actual batch dictionary
+            raw_info = tool_payload.get("batch") if isinstance(tool_payload, dict) and tool_payload.get("batch") is not None else tool_payload
+            if isinstance(raw_info, dict) and "data" in raw_info and isinstance(raw_info["data"], (dict, list)):
+                raw_info = raw_info["data"]
+            if isinstance(raw_info, list) and len(raw_info) > 0 and isinstance(raw_info[0], dict):
+                raw_info = raw_info[0]
+
+            # Check if this is a list of batches or records (e.g. get_batches)
+            records_list = None
+            if isinstance(tool_payload, list):
+                records_list = tool_payload
+            elif isinstance(tool_payload, dict):
+                for lk in ("batches", "batch_list", "items", "records", "training_records", "deviations"):
+                    if isinstance(tool_payload.get(lk), list):
+                        records_list = tool_payload[lk]
+                        break
+
+            if isinstance(raw_info, dict) and any(k in raw_info for k in ("batch_number", "lot_number", "product", "batch_name", "Lot_number", "Batch_name", "id")):
+                b_num = raw_info.get("batch_number") or raw_info.get("lot_number") or raw_info.get("Lot_number") or raw_info.get("id") or "N/A"
+                prod = raw_info.get("product") or raw_info.get("product_name") or raw_info.get("batch_name") or raw_info.get("Batch_name") or "N/A"
+                stat = raw_info.get("status") or raw_info.get("Status") or "Active"
+                b_size = raw_info.get("batch_size") or raw_info.get("Units_container") or raw_info.get("units_container") or raw_info.get("size") or "N/A"
+                exp = raw_info.get("expiration_date") or raw_info.get("expiry_date") or raw_info.get("Expiry_date") or "N/A"
+                mfr = raw_info.get("mfr_name") or raw_info.get("master_formula") or raw_info.get("Master_formula") or "N/A"
+                operator = raw_info.get("operator_name") or raw_info.get("Requestor_name") or raw_info.get("requestor_name") or raw_info.get("operator_id") or "N/A"
+                equip = raw_info.get("equipment_id") or raw_info.get("Equipment_id") or "N/A"
+                sched = raw_info.get("scheduled_date") or raw_info.get("batch_date") or raw_info.get("Batch_date") or raw_info.get("created_date") or "N/A"
+                guid = raw_info.get("id") or raw_info.get("record_id") or "N/A"
+
+                final_text = (
+                    f"### Batch Record Dossier: **{b_num}**\n\n"
+                    f"| Specification / Parameter | Value |\n"
+                    f"| :--- | :--- |\n"
+                    f"| **Batch / Lot #** | `{b_num}` |\n"
+                    f"| **Product / Batch Name** | **{prod}** |\n"
+                    f"| **Operational Status** | `{stat}` |\n"
+                    f"| **Batch Size / Units** | {b_size} units |\n"
+                    f"| **Master Formula (MFR)** | `{mfr}` |\n"
+                    f"| **Requestor / Operator** | {operator} |\n"
+                    f"| **Production Date** | {sched} |\n"
+                    f"| **Expiration Date** | {exp} |\n"
+                    f"| **Record Identifier (GUID)** | `{guid}` |\n"
+                )
+                if equip != "N/A":
+                    final_text += f"| **Assigned Equipment** | `{equip}` |\n"
+
+                if raw_info.get("chemical_components") and isinstance(raw_info["chemical_components"], list):
+                    final_text += "\n#### Dispensed Chemical Components\n\n"
+                    final_text += "| Component | Lot Number | Quantity | Unit |\n| :--- | :--- | :--- | :--- |\n"
+                    for comp in raw_info["chemical_components"]:
+                        if isinstance(comp, dict):
+                            c_name = comp.get("chemical_name") or comp.get("name") or "-"
+                            c_lot = comp.get("lot_number") or comp.get("lot") or "-"
+                            c_qty = comp.get("quantity_dispensed") or comp.get("quantity") or "-"
+                            c_unit = comp.get("unit") or "-"
+                            final_text += f"| {c_name} | `{c_lot}` | {c_qty} | {c_unit} |\n"
+
+                final_text += (
+                    f"\n**Suggested Actions:**\n"
+                    f"- Trace raw materials & genealogy: `Trace genealogy for batch {b_num}`\n"
+                    f"- Verify QA deviations: `Check open deviations for batch {b_num}`\n"
+                    f"- Check equipment status: `What equipment was used for {b_num}?`\n"
+                )
+            elif isinstance(raw_info, dict) and any(k in raw_info for k in ("totalBatch", "productionBatch", "releasedBatch", "holdBatch")):
+                tot = raw_info.get("totalBatch", 0)
+                prod = raw_info.get("productionBatch", 0)
+                rel = raw_info.get("releasedBatch", 0)
+                hld = raw_info.get("holdBatch", 0)
+                pend = raw_info.get("pendingBatch", 0)
+                final_text = (
+                    f"### Production Operations Dashboard\n\n"
+                    f"| Manufacturing Metric / KPI | Current Count | Operational Status |\n"
+                    f"| :--- | :--- | :--- |\n"
+                    f"| **Total Facility Batches** | **{tot}** | `Active Monitoring` |\n"
+                    f"| **Active in Production** | **{prod}** | `Production` |\n"
+                    f"| **Released (QA Passed)** | **{rel}** | `Approved` |\n"
+                    f"| **On QA Hold** | **{hld}** | `Quarantine` |\n"
+                    f"| **Pending Initiation** | **{pend}** | `Draft` |\n\n"
+                    f"**Suggested Inquiries:**\n"
+                    f"- *\"What are the {hld} batches currently on QA hold?\"*\n"
+                    f"- *\"Give me details on the active production batches\"*\n"
+                    f"- *\"Summarize QA compliance and open deviations\"*\n"
+                )
+            elif records_list is not None and len(records_list) > 1:
+                final_text = f"### Retrieved Records ({len(records_list)} found)\n\n"
+                final_text += "| Batch / Identifier | Name / Description | Status | Additional Details |\n"
+                final_text += "| :--- | :--- | :--- | :--- |\n"
+                for r in records_list[:25]:
+                    if isinstance(r, dict):
+                        b_id = r.get("lot_number") or r.get("Lot_number") or r.get("batch_number") or r.get("id") or "-"
+                        b_name = r.get("batch_name") or r.get("Batch_name") or r.get("product") or r.get("name") or "-"
+                        b_stat = r.get("status") or r.get("Status") or "Active"
+                        b_extra = r.get("mfr_name") or r.get("Master_formula") or r.get("date") or r.get("Units_container") or "-"
+                        final_text += f"| `{b_id}` | **{b_name}** | `{b_stat}` | {b_extra} |\n"
+                    else:
+                        final_text += f"| - | {str(r)} | - | - |\n"
+            elif isinstance(raw_info, dict):
+                # Clean key-value bullet points
+                final_text = "### Record Details\n\n"
+                for k, v in raw_info.items():
+                    if k.lower() in ("id", "raw_token", "_rid", "_self", "_etag"):
+                        continue
+                    clean_k = k.replace("_", " ").title()
+                    final_text += f"- **{clean_k}:** {v}\n"
+            else:
+                final_text = "No batch record details could be retrieved."
 
     return GenerationResult(
-        text=final_text,
+        text=final_text or "No details could be retrieved for this query.",
         functions_called=functions_called,
         retrieved_record_ids=record_ids,
         permission_denied=is_any_denied,

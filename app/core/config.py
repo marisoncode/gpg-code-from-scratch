@@ -13,7 +13,8 @@ class Settings(BaseSettings):
     compliance_api: str = ""
     order_api: str = ""
     notification_hub_api: str = ""
-    collection_id: str = "sales"
+    collection_id: str = ""
+    default_collection_id: str = "sales"
 
     # MongoDB / Cosmos DB (Mongo API) persistence
     # Required in production; empty by default to prevent silent misconfiguration.

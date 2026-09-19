@@ -27,7 +27,12 @@ from app.services.capabilities import (
     wants_dashboard_data,
 )
 from app.services.dashboard_service import fetch_dashboard_snapshot, format_snapshot_for_prompt
-from app.services.facility_api_service import set_current_token, set_current_user
+from app.services.facility_api_service import (
+    get_triggered_endpoints,
+    reset_triggered_endpoints,
+    set_current_token,
+    set_current_user,
+)
 from app.services.permissions_service import PermissionDeniedError, resolve_permissions
 from app.services.welcome import build_welcome_message
 
@@ -72,6 +77,8 @@ class ChatResponse(BaseModel):
     message: str
     thread_id: str
     messages: list[StoredMessage] = Field(default_factory=list)
+    endpoints_triggered: list[str] = Field(default_factory=list)
+    data_source: str = ""
 
 
 class WelcomeResponse(BaseModel):
@@ -172,17 +179,23 @@ async def welcome(
     user: AuthenticatedUser = Depends(require_facility_user),
 ):
     """
-    Fresh chat page greeting only — does NOT create a Mongo thread.
-    Thread is created on the first user message via POST /chat.
+    Fresh chat page greeting — creates a thread for the authenticated session
+    when the JWT is decoded and verified.
     """
     display = (username or "").strip() or user.name
-    _ = _user_key(user)
+    user_id = _user_key(user)
     greeting = build_welcome_message(display, lens=dashboard_assign)
+    thread = await chat_store.create_thread(
+        user_id=user_id,
+        username=display,
+        title="Support chat",
+        greeting=greeting,
+    )
     return WelcomeResponse(
         message=greeting,
         username=display,
         authenticated=True,
-        thread_id=None,
+        thread_id=thread["id"],
         messages=[],
     )
 
@@ -286,6 +299,7 @@ async def _load_dashboard_context(
     return None, context
 
 
+@router.post("/summary", response_model=DashboardSummaryResponse)
 @router.post("/dashboard-summary", response_model=DashboardSummaryResponse)
 async def dashboard_summary(
     request: DashboardSummaryRequest,
@@ -298,7 +312,7 @@ async def dashboard_summary(
         facility_user_name=request.facility_user_name,
     )
     # Context identity and downstream permissions MUST strictly use token-derived identity
-    set_current_user(user_id=user.user_id, username=actor_name or user.name)
+    set_current_user(user_id=user.user_id, username=actor_name or user.name, collection_id=user.collection_id)
     # Resolve authoritative permissions directly from CPG ManageUser API using verified token identity
     effective_permissions = await resolve_permissions(user.token, user_id=user.user_id)
     message = (request.message or "dashboard summary").strip()
@@ -328,7 +342,16 @@ async def chat(
     request: ChatRequest,
     user: AuthenticatedUser = Depends(require_facility_user),
 ):
+    reset_triggered_endpoints()
     set_current_token(user.token)
+    if user.user_id and "@" in user.user_id:
+        from app.clients.base_client import resolve_user_guid
+        dyn_guid, dyn_name = await resolve_user_guid(user.user_id, token=user.token)
+        if dyn_guid:
+            user.user_id = dyn_guid
+        if dyn_name and not user.name:
+            user.name = dyn_name
+
     display = (request.username or "").strip() or user.name
     user_id = _user_key(user)
     actor_id, actor_name = _facility_identity(
@@ -337,7 +360,7 @@ async def chat(
         facility_user_name=request.facility_user_name or display,
     )
     # Context identity: use token-derived user_id for security
-    set_current_user(user_id=user.user_id, username=actor_name or display)
+    set_current_user(user_id=user.user_id, username=actor_name or display, collection_id=user.collection_id)
 
     # SECURITY BOUNDARY:
     # Resolve authoritative permissions from CPG ManageUser / Permissions API using raw forwarded token.
@@ -348,8 +371,19 @@ async def chat(
     history: list[dict[str, str]] = []
 
     if thread_id:
-        await chat_store.get_thread(thread_id=thread_id, user_id=user_id)
-        history = await chat_store.history_for_model(thread_id=thread_id, user_id=user_id)
+        try:
+            await chat_store.get_thread(thread_id=thread_id, user_id=user_id)
+            history = await chat_store.history_for_model(thread_id=thread_id, user_id=user_id)
+        except HTTPException as exc:
+            if exc.status_code == status.HTTP_404_NOT_FOUND:
+                logger.info(
+                    "Thread '%s' not found for user '%s'. Creating fresh thread on response.",
+                    thread_id,
+                    user_id,
+                )
+                thread_id = None
+            else:
+                raise
 
     if not history and request.history:
         history = [{"role": m.role, "content": m.content} for m in request.history]
@@ -531,9 +565,12 @@ async def chat(
         response=response_text,
     )
 
+    endpoints = get_triggered_endpoints()
     return ChatResponse(
         message=response_text,
         thread_id=thread_id,
         messages=_to_stored(updated.get("messages") or []),
+        endpoints_triggered=endpoints,
+        data_source=data_source or ("live_microservice" if endpoints else "conversational"),
     )
 
